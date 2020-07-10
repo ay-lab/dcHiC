@@ -2,7 +2,7 @@
 
 dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Hierarchal Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output HTML files for visualization (using IGV.js) and Gene Set Enrichment Analysis on significant compartment changes. 
 
-For more information, see our presentation & <a href = "https://iscb-ismb20.myconferencenow.com/poster/dchic-differential-compartment-analysis-of-hi-c-datasets/"> poster</a> at ISMB 2020. 
+For more information, see our presentation (Regulatory & Systems Genomics COSI) & <a href = "https://iscb-ismb20.myconferencenow.com/poster/dchic-differential-compartment-analysis-of-hi-c-datasets/"> poster</a> at ISMB 2020. 
 
 ## Installation
 
