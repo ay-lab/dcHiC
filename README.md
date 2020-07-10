@@ -47,6 +47,7 @@ Other Dependencies:
 - R Hashmap
 - bedtools
 - igv-reports 
+- Java 11+ (if you wish to perform gene set enrichment analysis)
 - cooler (only if pre-processing _.cool_ files)
 
 ## Input
