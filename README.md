@@ -2,6 +2,8 @@
 
 dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Hierarchal Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output HTML files for visualization (using IGV.js) and Gene Set Enrichment Analysis on significant compartment changes. 
 
+For more information, see our presentation & <a href = "https://iscb-ismb20.myconferencenow.com/poster/dchic-differential-compartment-analysis-of-hi-c-datasets/"> poster</a> at ISMB 2020. 
+
 ## Installation
 
 ### Option 1: Conda (Highly Recommended)
@@ -47,5 +49,30 @@ Other Dependencies:
 - igv-reports 
 - cooler (only if pre-processing _.cool_ files)
 
-## TODO: Input, program arguments, etc.
+## Input
+
+The input to dcHiC are tab-delimited O/E Hi-C correlation matrices. Pre-processing steps to convert files to this format (_.hic_, _.cool_, Hi-C Pro) are described later; however, whatever the format, you will have a directory structure as follows before entering to the application: 
+
+```bash
+./HiCDataset1
+    chr1.matrix
+    chr2.matrix
+    ...
+./HiCDataset2
+    chr1.matrix
+    chr2.matrix
+    ...
+...
+```
+
+dcHiC uses an input file with the format below. The replicate, name, and directory columns are required. The name column descibes a particular Hi-C profile, and each Hi-C profile must have two or more replicates (more replicates increases power of comparisons). Given these three columns, a two-tiered hierarchy will be run with all replicates under each "name" composing a group. Differential calling will be run between the average PC's of the replicates under each "name." 
+
+```bash
+replicate   name    (grouping)   directory
+```
+
+The "grouping" column is optional...
+
+
+## TODO: Program Arguments, Examples, etc. 
 
