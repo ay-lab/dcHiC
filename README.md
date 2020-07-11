@@ -50,6 +50,24 @@ Other Dependencies:
 - Java 11+ (if you wish to perform gene set enrichment analysis)
 - cooler (only if pre-processing _.cool_ files)
 
+## About dcHiC
+
+### Hierarchal Multiple Factor Analysis 
+
+Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. In short, it does so by performing a PCA on each individual dataset, dividing it by its first eigenvalue, then performing a global PCA on the cohort. HMFA is a hierarchal extension that performs this process over groupings of datasets in a hierachy. dcHiC implements HMFA for Hi-C datasets to allow for comparison of any number of groups (in a two-tiered hierarchy) and datasets. 
+
+### Differential Calling
+
+Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. Please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
+
+#### Visualization
+
+Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. To see examples, see this link: https://dchic-viz.imfast.io/. For more information on how to run, see the input section below. 
+
+### Compartmental Gene Set Analysis
+
+To analyze the biological significance of differential compartments, dcHiC implements a pre-ranked GSEA (ranked by the -log10 of the p-values, m-distance, or dZsc). The gene set file should be specified by the user. 
+
 ## Input Specifications
 
 The input to dcHiC are tab-delimited O/E Hi-C correlation matrices. Learn how to pre-process data (_.hic_, _.cool_, Hi-C Pro) on <a href = "https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Correlation-Matrices">the wiki page here</a>. Whatever option you choose, you should have directory structure like this before entering compartment analysis: 
@@ -79,24 +97,6 @@ replicate   name    (grouping)   directory
 #### Important Note: Be sure names do not include underscores (due to naming conventions in-program)
 
 The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (combining different cell lines). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
-    
-## About dcHiC
-
-### Hierarchal Multiple Factor Analysis 
-
-Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. In short, it does so by performing a PCA on each individual dataset, dividing it by its first eigenvalue, then performing a global PCA on the cohort. HMFA is a hierarchal extension that performs this process over groupings of datasets in a hierachy. dcHiC implements HMFA for Hi-C datasets to allow for comparison of any number of groups (in a two-tiered hierarchy) and datasets. 
-
-### Differential Calling
-
-Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. Please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
-
-#### Visualization
-
-Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. To see examples, see this link: https://dchic-viz.imfast.io/. For more information on how to run, see the input section below. 
-
-### Compartmental Gene Set Analysis
-
-To analyze the biological significance of differential compartments, dcHiC implements a pre-ranked GSEA (ranked by the -log10 of the p-values, m-distance, or dZsc). The gene set file should be specified by the user. 
 
 ## Program Arguments
 
@@ -127,7 +127,7 @@ python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -geno
 ```
 dcHiC can be run from top to bottom or it can be run in a "modular" setting. See examples in the wiki (to be added).
 
-## Visualization Parameters
+## Visualization Input
 
 To run visualization, specify two parameters to igvtrack.R. The first is an input file. The first column should contain bedGraph files (full compartment details or other data), the second column should define the name for each file, and the last column should contain labels for the group of each data. Compartment details _must_ be named "compartment." 
 
@@ -138,6 +138,62 @@ file                     name          group
 /path/to/other_bedGraph  laminB_expA   laminB
 ... 
 ```
+
+With this, run:
+```bash
+Rscript /path/to/igvtrack.R [visualization file] [genome]
+Rscript /path/to/igvtrack.R  visualization.txt mm10 #example
+```
+## Output
+
+In the directory where you have run the data, you should have the following:
+
+### A directory for each chromosome
+Inside, the important files are: 
+- O/E correlation matrices of common bins across input files (for experiment name XX) named BalancedChrMatrix_exp_XX.txt
+- HMFA text and bedGraph results, named hmfa_XX_exp_XXX.txt (XX denotes experiment name / XXX denotes experiment number as specified in input) and HMFA_chrXXX_exp_XX.bedGraph (XXX denotes chromosome / XX denotes chromosome name)
+- pcFiles directory: A directory of all raw PC files
+- Other assorted files for program use
+
+### A DifferentialCompartment directory
+- All pairwise comparisons between Hi-C groups/groupings (specified in input) XXX and XXX:
+```bash
+    XXX_vs_XXX_full_compartment_details.bedGraph
+    XXX_vs_XXX_differential_compartment_details.bedGraph
+```
+- Comparison file with significant differential interactions among all groups: 
+```bash
+    MultiComparison_full_compartment_details.bedGraph
+    MultiComparison_differential_compartments_details.bedGraph
+```
+    
+#### If cGSEA is to be performed
+- Compartment detail files with genes outlined:
+```
+    Genes.XXX_vs_XXX_full_compartment_details.bedGraph
+    ...
+    Genes.MultiComparison_full_compartment_details.bedGraph
+```
+- Ranked gene files for input to GSEA:
+```
+    XXXvsXXX_genes_ranked.rnk
+    MultiComparison_genes_ranked.rnk
+```
+- GSEA directories: Within each GSEA directory, there will be many results. View the index.html to explore results. See a guide to interpret results <a href = "https://www.gsea-msigdb.org/gsea/doc/GSEAUserGuideTEXT.htm"> here </a>. 
+```
+    GSEA_XXX_vs_XXX
+    ...
+    GSEA_MultiComparison
+```
+  
+
+#### Coordinate PNG's
+
+PC1 vs PC2 plots for experiment groups/groupings. 
+            
+## Tutorial: Mice Neural Differentiation Data
+
+See <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">the tutorial page here</a>. 
 
 ## Contact
 
