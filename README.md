@@ -60,7 +60,7 @@ Multiple Factor Analysis is a variant of PCA (the traditional way to identify co
 
 Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. Please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
 
-#### Visualization
+### Visualization
 
 Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. To see examples, see this link: https://dchic-viz.imfast.io/. For more information on how to run, see the input section below. 
 
