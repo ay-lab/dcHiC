@@ -78,7 +78,7 @@ replicate   name    (grouping)   directory
 
 #### Important Note: Be sure names do not include underscores (due to naming conventions in-program)
 
-The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before. However, one important thing does change. Before, dcHiC would take the average of all replicate PC's under each "name" and make comparisons between the unique names in the second column. With a grouping (that encompasses multiple names), the average of all PC's under each grouping will be taken and comparisons will be made between those. See sample input files <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0> here </a>. 
+The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (combining different cell lines). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
     
 ## About dcHiC
 
@@ -88,11 +88,7 @@ Multiple Factor Analysis is a variant of PCA (the traditional way to identify co
 
 ### Differential Calling
 
-Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. 
-
-In short, our method first uses Mahalanobis Distance, a multivariate extension of z-score, to assign p-values to each bin based on its relative distance to the center of its distribution. After finding the outliers, it then takes pairwise comparisons of replicate PC values and learns data variation of replicates and uses those parameters to create a secondary measure "dZsc" that defines the degree to which bins across pairs of ._different cell lines._ differ differ beyond technical variation. For group analysis, comparisons are taken between all pairs and the dZsc values are averaged for each bin. 
-
-These values, p-values and dZsc, are used together in an Independent Hypothesis Weighting (dZsc as the covariate) to create the output. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
+Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. Please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
 
 #### Visualization
 
@@ -133,7 +129,7 @@ dcHiC can be run from top to bottom or it can be run in a "modular" setting. See
 
 ## Visualization Parameters
 
-To run visualization, specify two parameters to igvtrack.R. The first is an input file. The first column should contain bedGraph files (full compartment details or other data), the second column should define the name for each file, and the last column should contain labels for the group of each data. Compartment details ._must._ be named "compartment." 
+To run visualization, specify two parameters to igvtrack.R. The first is an input file. The first column should contain bedGraph files (full compartment details or other data), the second column should define the name for each file, and the last column should contain labels for the group of each data. Compartment details _must_ be named "compartment." 
 
 ```bash
 file                     name          group
