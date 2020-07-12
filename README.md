@@ -22,7 +22,7 @@ conda env create -f ./dchic/environment.yml
 conda activate dchic
 ```
 
-Note: Conda has experienced some trouble as of late with Bioconductor packages. If Bioconductor-IHW raises an error, preferably use a Linux machine or remove IHW from the yml file and install IHW directly via R:
+Note: Conda has experienced some trouble as of late with Bioconductor packages. If Bioconductor-IHW raises an error during installation/while running, you may try one of several things. Using Linux is preferable, but using a fresh miniconda installation can resolve library issues on Mac. Removing IHW from the yml file and install IHW directly via R may also work:
 
 ```bash
 if (!requireNamespace("BiocManager", quietly = TRUE))
