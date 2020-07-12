@@ -52,17 +52,19 @@ Other Dependencies:
 
 ## About dcHiC
 
+#### For detailed information on all of these methods, please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics.
+
 ### Hierarchal Multiple Factor Analysis 
 
 Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. In short, it does so by performing a PCA on each individual dataset, dividing it by its first eigenvalue, then performing a global PCA on the cohort. HMFA is a hierarchal extension that performs this process over groupings of datasets in a hierachy. dcHiC implements HMFA for Hi-C datasets to allow for comparison of any number of groups (in a two-tiered hierarchy) and datasets. 
 
 ### Differential Calling
 
-Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. Please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
+Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
 
 ### Visualization
 
-Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. To see examples, see this link: https://dchic-viz.imfast.io/. For more information on how to run, see the input section below. 
+Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. <a href = "https://dchic-viz.imfast.io/">See examples at this link</a>. For more information on how to run, see the input section below. 
 
 ### Compartmental Gene Set Analysis
 
@@ -111,7 +113,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-parallel**             | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**       | Genome desired (hg38, hg19, mm10, mm9)
 | **-signAnalysis**           | Specify which biological data will be used to determine eigenvector sign with ("gc" or "tss"). 
-| **-alignData**           | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/odz8ietjutipbg9/AADt6y518gHo7ftPCxR-dZ0_a?dl=0">here</a> for examples. 
+| **-alignData**           | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. 
 | **-cGSEA**           | Optional: If you wish to perform a ranked GSEA on signficant compartment changes, enter an input file where the first line is a number for GSEA ranking (1 = pAdj, 2 = dZsc, 3 = mahalanobis distance) and second line is the path to a gene set GMT file
 | **-keepIntermediates**           | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument. 
 
@@ -186,10 +188,9 @@ Inside, the important files are:
     GSEA_MultiComparison
 ```
   
-
-#### Coordinate PNG's
-
-PC1 vs PC2 plots for experiment groups/groupings. 
+### Other Information
+- **Coordinate PNG's**: PC1 vs PC2 plots for experiment groups/groupings. 
+- **PC Selection Info**: See which PC (1 or 2) was used for compartment analysis for each chromosome ("chr_info.txt")
             
 ## Tutorial: Mice Neural Differentiation Data
 
