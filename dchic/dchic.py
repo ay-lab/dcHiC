@@ -306,8 +306,6 @@ if results.par is None:
         else:
             for file in glob.glob("Rsession*"):
                 shutil.move(file, newdir)
-            for file in glob.glob("pc_decision*"):
-                shutil.move(file, newdir)
 
 # =============================================================================
 # Parallel Processing
