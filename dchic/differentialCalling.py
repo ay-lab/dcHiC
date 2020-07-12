@@ -150,7 +150,7 @@ def createModel(r1data, r2data, chrNum, makeImages):
     if makeImages: 
         plt.plot(x, y, 'ro', markersize = 1)
         plt.plot(x, model.predict(x))
-        plt.show()
+        #plt.show()
         filename = "Chr" + str(chrNum) + "_replicates.png"
         plt.savefig(filename, bbox_inches='tight', dpi = 600)
         plt.close()
