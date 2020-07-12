@@ -11,8 +11,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-import math
 import os
+import numpy as np
 
 parser = argparse.ArgumentParser()
 
@@ -60,9 +60,6 @@ for chrm in results.chrs:
 aggregate_xcoords = []
 aggregate_ycoords = []
 
-print(xcoords)
-print(ycoords)
-
 for a in range(int(results.numExp)):
     temp_xsum = 0
     temp_ysum = 0
@@ -86,11 +83,10 @@ plt.title("PC1 vs PC2, aggregate")
 plt.xlabel("PC1")
 plt.ylabel("PC2")
 
-smallcolors = ["red", "blue", "yellow", "green", "black", "magenta", "cyan"]
-colors = ["red", "blue", "green"]
-threeMultiple = int(math.ceil(int(results.numExp) / 5))
-for a in range(threeMultiple):
-    colors.extend(smallcolors)
+colors = []
+for a in range(int(results.numExp)):
+    rgb = np.random.rand(3,)
+    colors.append(rgb)
 
 for a in range(int(results.numExp)):
     plt.plot(aggregate_xcoords[a], aggregate_ycoords[a], 'ro', marker = "*", markersize = 15, color = colors[a])
@@ -136,8 +132,8 @@ for chrm in results.chrs:
         group_x.append(xtemp)
         group_y.append(ytemp)
     
-print(group_x)
-print(group_y)
+#print(group_x)
+#print(group_y)
 
 for a in range(int(results.numGroups)):
     temp_xsum = 0
