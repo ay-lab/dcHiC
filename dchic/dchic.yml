@@ -1,0 +1,24 @@
+name: dchic
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconductor-ihw
+  - r-factominer
+  - r-hashmap
+  - cooler
+  - bedtools
+  - scipy
+  - matplotlib
+  - scikit-learn
+  - r-r.utils
+  - python=3.7
+  - pysam
+  - pip
+  - requests
+  - pip:
+    - igv-reports
+    - hic-straw
+prefix: /home/jeffreywang/miniconda3/envs/dchic
+
