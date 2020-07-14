@@ -22,7 +22,7 @@ conda env create -f ./dchic/environment.yml
 conda activate dchic
 ```
 
-Note: Conda has experienced some trouble as of late with Bioconductor packages. If Bioconductor-IHW raises an error during installation/while running, you may try one of several things. Using Linux is preferable, but using a fresh miniconda installation can resolve library issues on Mac. Removing IHW from the yml file and install IHW directly via R may also work:
+Note: Conda has experienced some trouble as of late with Bioconductor packages. If Bioconductor-IHW raises an error during installation/while running, you may try one of several things. Linux is the recommended platform to perform analysis, but using a fresh miniconda installation can resolve library issues on Mac. Removing IHW from the yml file and install IHW directly via R may also work:
 
 ```bash
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -40,13 +40,13 @@ Python Dependencies:
 - numpy
 - matplotlib
 - scikit-learn
+- igv-reports 
 
 Other Dependencies: 
 - R >= 3.4
 - FactoMineR
 - R Hashmap
 - bedtools
-- igv-reports 
 - Java 11+ (if you wish to perform gene set enrichment analysis)
 - cooler (only if pre-processing _.cool_ files)
 
@@ -106,16 +106,16 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 
 | Argument              | Meaning                 
 | --------------------- | ----------------------- |
-| **-res**              | Resolution of processing (i,e. 100000)
-| **-inputFile**              | Path to input.txt file, as described above
-| **-chrFile**              | File for chromosomes to be processed (one chromosome label per line) 
-| **-input**              | Assign 1 (if using HOMER input) and 2 (for all else): Used to scan file names in input directories. 
-| **-parallel**             | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
-| **-genome**       | Genome desired (hg38, hg19, mm10, mm9)
-| **-signAnalysis**           | Specify which biological data will be used to determine eigenvector sign with ("gc" or "tss"). 
-| **-alignData**           | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. 
-| **-cGSEA**           | Optional: If you wish to perform a ranked GSEA on signficant compartment changes, enter an input file where the first line is a number for GSEA ranking (1 = pAdj, 2 = dZsc, 3 = mahalanobis distance) and second line is the path to a gene set GMT file
-| **-keepIntermediates**           | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument. 
+| **-res**                | Resolution of processing (i,e. 100000)
+| **-inputFile**                | Path to input.txt file, as described above
+| **-chrFile**                | File for chromosomes to be processed (one chromosome label per line) 
+| **-input**                | Assign 1 (if using HOMER input) and 2 (for all else): Used to scan file names in input directories. 
+| **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
+| **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
+| **-signAnalysis**             | Specify which biological data will be used to determine eigenvector sign with ("gc" or "tss"). 
+| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. 
+| **-cGSEA**             | Optional: If you wish to perform a ranked GSEA on signficant compartment changes, enter an input file where the first line is a number for GSEA ranking (1 = pAdj, 2 = dZsc, 3 = mahalanobis distance), the second line is the path to a gene set GMT file, and the third line is a bed file with gene markers.
+| **-keepIntermediates**             | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument. 
 
 For instance, the following command would run a human non-HOMER input, 6 chromosomes at a time, with cGSEA, at a resolution of 100kb: 
 
@@ -152,8 +152,15 @@ In the directory where you have run the data, you should have the following:
 
 ### A directory for each chromosome
 Inside, the important files are: 
-- O/E correlation matrices of common bins across input files (for experiment name XX) named BalancedChrMatrix_exp_XX.txt
-- HMFA text and bedGraph results, named hmfa_XX_exp_XXX.txt (XX denotes experiment name / XXX denotes experiment number as specified in input) and HMFA_chrXXX_exp_XX.bedGraph (XXX denotes chromosome / XX denotes chromosome name)
+- O/E correlation matrices of common bins across input files (for experiment name XX):
+```bash
+BalancedChrMatrix_exp_XX.txt
+```
+- HMFA text and bedGraph results: "X" denotes experiment name, "XX" denotes experiment number in input, "XXX" denotes chromosome number
+```bash
+hmfa_X_exp_XX.txt
+HMFA_chrXXX_exp_XX.bedGraph
+```
 - pcFiles directory: A directory of all raw PC files
 - Other assorted files for program use
 
