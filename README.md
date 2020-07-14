@@ -56,21 +56,21 @@ Other Dependencies:
 
 ### Hierarchal Multiple Factor Analysis 
 
-Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. In short, it does so by performing a PCA on each individual dataset, dividing it by its first eigenvalue, then performing a global PCA on the cohort. HMFA is a hierarchal extension that performs this process over groupings of datasets in a hierachy. dcHiC implements HMFA for Hi-C datasets to allow for comparison of any number of groups (in a two-tiered hierarchy) and datasets. 
+Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. dcHiC uses a hierarchal form of MFA that allows for comparison of any number of groups (in a two-tiered hierarchy) and datasets. 
 
 ### Differential Calling
 
-Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between the average PC values of replicates for a cell line, or groups of cell lines. Differential analysis can be performed in pairwise and group settings. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups (or groupings, if specified)—it outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
+Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between Hi-C datasets in pairwise and group settings. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups. It outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
 
 ### Visualization
 
 Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. <a href = "https://dchic-viz.imfast.io/">See examples at this link</a>. For more information on how to run, see the input section below. 
 
-### Compartmental Gene Set Analysis
+### Compartmental Gene Set Analysis (cGSEA) 
 
 To analyze the biological significance of differential compartments, dcHiC implements a pre-ranked GSEA (ranked by the -log10 of the p-values, m-distance, or dZsc). The gene set file should be specified by the user. 
 
-## Input Specifications
+## Input File(s) Specifications
 
 The input to dcHiC are tab-delimited O/E Hi-C correlation matrices. Learn how to pre-process data (_.hic_, _.cool_, Hi-C Pro) on <a href = "https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Correlation-Matrices">the wiki page here</a>. Whatever option you choose, you should have directory structure like this before entering compartment analysis: 
 
@@ -98,7 +98,14 @@ replicate   name    (grouping)   directory
 
 #### Important Note: Be sure names do not include underscores (due to naming conventions in-program)
 
-The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (combining different cell lines). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
+The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
+
+### Compartmental Gene Set Enrichment Analysis (cGSEA) Input File
+
+cGSEA is an optional part of the pipeline that performs GSEA on a pre-ranked list of genes in significant differential compartments. To perform cGSEA, first ensure you have Java 11+. The input for cGSEA is a file
+- The first line specifies how the data should be ranked: 1 is the -log(10) of the p-adjusted value, 2 is dZsc, and 3 is mahalanobis distance. In almost all cases, it should be 1 but <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> provides specifics. 
+- The second line is the path to a gene set GMT file. See the tutorial for an example. 
+- The third line is the path to a gene position bed for the genome used. See <a href = "https://www.dropbox.com/sh/b8arrl7tzl1nzc3/AABV-1kSy93dB32peZ0ocfd4a?dl=0"> here </a> for examples.
 
 ## Program Arguments
 
@@ -114,8 +121,8 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
 | **-signAnalysis**             | Specify which biological data will be used to determine eigenvector sign with ("gc" or "tss"). 
 | **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. 
-| **-cGSEA**             | Optional: If you wish to perform a ranked GSEA on signficant compartment changes, enter an input file where the first line is a number for GSEA ranking (1 = pAdj, 2 = dZsc, 3 = mahalanobis distance), the second line is the path to a gene set GMT file, and the third line is a bed file with gene markers.
-| **-keepIntermediates**             | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument. 
+| **-cGSEA**             | Optional: If you wish to perform a ranked GSEA on signficant compartment changes, enter the input file as specified above.  
+| **-keepIntermediates**             | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
 
 For instance, the following command would run a human non-HOMER input, 6 chromosomes at a time, with cGSEA, at a resolution of 100kb: 
 
@@ -131,7 +138,7 @@ dcHiC can be run from top to bottom or it can be run in a "modular" setting. See
 
 ## Visualization Input
 
-To run visualization, specify two parameters to igvtrack.R. The first is an input file. The first column should contain bedGraph files (full compartment details or other data), the second column should define the name for each file, and the last column should contain labels for the group of each data. Compartment details _must_ be named "compartment." 
+Visualization can be run afterward using igvtrack.R, which takes two arguments. The first is an input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ use the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
 
 ```bash
 file                     name          group
@@ -144,7 +151,7 @@ file                     name          group
 With this, run:
 ```bash
 Rscript /path/to/igvtrack.R [visualization file] [genome]
-Rscript /path/to/igvtrack.R  visualization.txt mm10 #example
+Rscript /path/to/igvtrack.R  visualization.txt mm10 # an example
 ```
 ## Output
 
