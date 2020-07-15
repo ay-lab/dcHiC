@@ -2,6 +2,7 @@ name: dchic
 channels:
   - bioconda
   - conda-forge
+  - r
   - defaults
 dependencies:
   - bioconductor-ihw
