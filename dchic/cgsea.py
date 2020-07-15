@@ -14,11 +14,7 @@ import os
 
 parser = argparse.ArgumentParser() 
 
-#parser.add_argument('-rankBy', action = 'store', dest='rank', help= 'rank by: 1 for p adjusted value, 2 for dZsc, 3 for mdist (padj is default)')
-
-parser.add_argument('-geneBed', action = 'store', dest = 'geneBed', help = 'Gene bed for mice/humans')
-
-parser.add_argument('-differentialFile', action = 'store', dest = 'differentialFile', help = 'Differential File: name should be in form: ###_vs_###_full_compartment_details.bedGraph')
+parser.add_argument('-differentialFile', action = 'store', dest = 'differentialFile', help = 'Differential File: name should be in form: #####_full_compartment_details.bedGraph')
                     
 parser.add_argument('-cGSEAfile', action = 'store', dest = 'cGSEAfile', help = "Specify GSEA pre-ranked parameters. See documentation for details.")
 
@@ -30,11 +26,6 @@ results = parser.parse_args()
 
 startdir = os.getcwd()
 scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
-
-# Make gene set file
-cmd = "Rscript " + os.path.join(scriptdir, "cgsea.r") + " " + results.geneBed + " " + results.differentialFile
-os.system(cmd)
-geneDiffFile = "Genes." + results.differentialFile
 
 # GSEA specifications
 gmtFile = ""
@@ -54,10 +45,17 @@ set_min = "15"
 zip_report = "false"
 outf = str(results.outf)
 ranker = 1
+geneBed = ""
 
 with open(results.cGSEAfile, "r") as params:
     ranker = int(params.readline().strip())
     gmtFile = str(params.readline().strip())
+    geneBed = str(params.readline().strip())
+
+# Make gene set file
+cmd = "Rscript " + os.path.join(scriptdir, "cgsea.r") + " " + geneBed + " " + results.differentialFile
+os.system(cmd)
+geneDiffFile = "Genes." + results.differentialFile
     
 #print(type(gmtFile))
 class gene:
@@ -140,10 +138,3 @@ else:
 
 # -rnd_seed timestamp -set_max 500 -set_min 15 -zip_report false -out /Users/jeffreywang/gsea_home/output/jul03
 # gsea-cli.sh GSEAPreranked -gmx /Users/jeffreywang/Downloads/MousePath_All_gmt-Format.gmt -collapse No_Collapse -mode Max_probe -norm meandiv -nperm 1000 -rnk /Users/jeffreywang/Documents/LJI/ClusterImports/MouseDiff/GSEA_ImportantGenes/NPCvsmESC_genes_ranked.rnk -scoring_scheme weighted -rpt_label GSEA_Mice_ImpGenes -create_svgs false -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed timestamp -set_max 500 -set_min 15 -zip_report false -out /Users/jeffreywang/Documents/LJI/ClusterImports/MouseDiff/GSEA_ImportantGenes
-
-
-
-
-
-
-
