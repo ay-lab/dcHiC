@@ -19,6 +19,5 @@ dependencies:
   - requests
   - pip:
     - igv-reports
-    - hic-straw
 prefix: /home/jeffreywang/miniconda3/envs/dchic
 
