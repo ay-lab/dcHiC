@@ -46,6 +46,7 @@ Other Dependencies:
 - R >= 3.4
 - FactoMineR
 - R Hashmap
+- IHW (Bioconductor)
 - bedtools
 - Java 11+ (if you wish to perform gene set enrichment analysis)
 - cooler (only if pre-processing _.cool_ files)
