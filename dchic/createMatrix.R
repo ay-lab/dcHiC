@@ -1,30 +1,36 @@
 library(Rcpp)
 library(hashmap)
-source("hicmat.r")
-source("createfolder.r")
-sourceCpp("ijkmat.cpp")
+library(base)
+
+thisFile <- function() {
+  cmdArgs <- commandArgs(trailingOnly = FALSE)
+  needle <- "--file="
+  match <- grep(needle, cmdArgs)
+  if (length(match) > 0) {
+    # Rscript
+    return(normalizePath(sub(needle, "", cmdArgs[match])))
+  } else {
+    # 'source'd via R console
+    return(normalizePath(sys.frames()[[1]]$ofile))
+  }
+}
 
 args = commandArgs(trailingOnly=TRUE)
+source(file.path(dirname(thisFile()),"hicmat.r"))
+source(file.path(dirname(thisFile()),"createfolder.r"))
+sourceCpp(file.path(dirname(thisFile()),"ijkmat.cpp"))
+
+
 proj_name <- args[length(args)]
 text_file <- args[length(args)-1]
 
-
 df <- read.table(text_file, header=FALSE)
-#matrices <- vector(mode="character", length=length(df[1]))
-#bed <- vector(mode="character", length=length(df[2]))
-#prefixes <- vector(mode="character", length=length(df[3]))
 
 matrices <- c()
 bed <- c()
 prefixes <- c()
 
 print(df)
-# for (a in 1:length(df[1]))
-#  matrices[a] <- df[[1]][[a]]
-# for (a in 1:length(df[2]))
-#  bed[a] <- df[[2]][[a]]
-# for (a in 1:length(df[3]))
-#  prefixes[a] <- df[[3]][[a]]
 
 for (a in 1:nrow(df)) {
   loc <- as.character(df$V1[[a]])
