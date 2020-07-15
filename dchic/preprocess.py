@@ -20,7 +20,7 @@ parser.add_argument("-genomeFile", action = "store", dest = "genomeSize", help =
 
 parser.add_argument("-res", action = "store", dest = "res", help = "Enter the resolution for the processing")
 
-parser.add_argument("-prefix", action = "store", dest = "prefix", help = "FOR OPTION 1: Enter chromosome of file (i,e, 'X' or '3'). FOR OPTION 2: Enter prefix of file you wish to run")
+parser.add_argument("-prefix", action = "store", dest = "prefix", help = "FOR OPTION 1 (.hic): Enter chromosome of file (i,e, 'X' or '3'). FOR OPTION 2 (,cool): Enter prefix of file you wish to run")
                     
 results = parser.parse_args()
 
@@ -53,8 +53,13 @@ if results.mode == "1": #.hic file data dump
             
     lineEls = []
     badPositions = [] # 0-indexed
+    lineLength = len(matrixArr[0])
     
-    for line in matrixArr:        
+    for line in matrixArr:     
+        length_line = len(line)
+        if length_line != lineLength:
+            print("Error. This matrix is not symmetric.")
+            sys.exit()
         goodLine = False
         perfectLine = True
         for a in line:
@@ -68,13 +73,13 @@ if results.mode == "1": #.hic file data dump
                     badPositions.append(a)
             break
     
-    newName = "chr" + str(results.chr) + ".matrix"
+    newName = "chr" + str(results.prefix) + ".matrix"
     iterator = 0
     outline = ""
     while iterator < len(matrixArr):
-        if iterator in badPositions:
-            iterator+=1
-            continue
+     #   if iterator in badPositions:
+     #       continue
+     #       iterator+=1
         outline += "\t" + chrTag + "-" + str(res*iterator)
         iterator+=1
         
@@ -83,8 +88,9 @@ if results.mode == "1": #.hic file data dump
         for a in range(len(matrixArr)):
             if a in badPositions:
                 outline = chrTag + "-" + str(res*a)
-                for b in range(len(line)):
+                for b in range(lineLength):
                     outline += "\t0"
+                outfile.write(outline + "\n")
             else:
                 outline = chrTag + "-" + str(res*a)
                 line = matrixArr[a]
@@ -94,7 +100,9 @@ if results.mode == "1": #.hic file data dump
                     else: 
                         outline += "\t" + str(line[b])
                 outfile.write(outline + "\n")     
-
+        
+    print("Matrix creation done.")
+    
 elif results.mode == "2": #.cool data dump option
     name = results.prefix + "_" + str(results.res) + "_abs.bed" #data_200000_abs.bed
     iterator = 0
@@ -126,15 +134,6 @@ elif results.mode == "2": #.cool data dump option
     cmd = "cooler dump -o " + outname + " " + filename 
     os.system(cmd)
     
+else:
+    print("Specify a mode.")
     
-    
-    
-    
-#    with open(results.file, "r") as matrixfile:
-#        print("Editing sparse matrix............")
-#        matrixfile.readline()
-#        newname = "data_" + str(results.res) + ".matrix"
-#        with open(newname, "w") as newmatrixfile:
-#            for line in matrixfile:
-#                linearr = line.split()
-#                newmatrixfile.write(str(int(linearr[0])+1) + "\t" + str(int(linearr[1])+1) + "\t" + linearr[2] + "\n")
