@@ -39,18 +39,6 @@ fitModelChromwise <- function(X,Y,M,S,mcomp=FALSE) {
   }
 }
 
-# fitModelChromwise <- function(X,Y,M,S) {
-# 
-#   D <- data.frame(X=(X-mean(X))/sd(X),Y=(Y-mean(Y))/sd(Y))
-#   model <- lm(Y ~ X, data=D)
-#   cfs <- coef(model)
-#   D[,"distance"] <- 0
-#   for(i in 1:nrow(D)) {
-#     D$distance[i] <- round(distancePointLine(p1x=D$X[i], p1y=D$Y[i], slope=cfs[2], intercept=cfs[1]),3)
-#   }
-#   return(c((D$distance - M)/S))
-# }
-
 ## Input 
 ## @pcfiles is a vector of chromosome wise pc component file names
 ## @samplefile is a dataframe with the following format
@@ -69,7 +57,8 @@ fitModelChromwise <- function(X,Y,M,S,mcomp=FALSE) {
 ##
 ## padj is the adjusted pvalue threshold and dzsc is the zscore cutoff
 ## mcomp is the multi comparison. Set to FALSE if not required 
-##
+#
+
 diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, padj=1e-2, dzsc=3) {
   print(lprmfile)
   createFolder("DifferentialCompartment",1)
@@ -151,7 +140,6 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
         combined_distdf[[i]] <- distdf
       }
     }
-    print("individ-comp")
     combined_data <- do.call(rbind, combined_data)
     bed <- as.data.frame(do.call(rbind,strsplit(rownames(combined_data),"-")),stringsAsFactors=F)
     bed$V1 <- as.character(bed$V1)
@@ -183,7 +171,7 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
       }
       r1 <- r1 + 1
     }
-    
+    print("Running MultiComparison")
     ## Multi comparison script
     if (mcomp) {
       combined_distdf <- do.call(rbind, combined_distdf)
@@ -224,17 +212,6 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
 }
 
 # Main Method
-#pcfile = args[length(args)]
-#print(pcfile)
-#pcfile = normalizePath(pcfile)
-#print(pcfile)
-#pc_df = read.table(args[length(args)-1])
-#pcfiles = c()
-#for (a in 1:nrow(pc_df)) {
-#  loc <- as.character(pc_df$V1[[a]])
-#  pcfiles <- c(pcfiles, loc)
-#}
-#getwd()
 samplefile = read.table(args[length(args)-1], h=T)
 lprmfile = normalizePath(args[length(args)-2])
 
@@ -265,13 +242,3 @@ print(pcFiles)
 
 diffcmp(chrvector, pcFiles, samplefile, lprmfile, res, mcomp)
 print("DiffCmp Run")
-
-
-# for(j in 1:length(prefix)) {
-#   b <- as.vector(samplefile[samplefile$prefix==prefix[j],]$replicate)
-#   print(b)
-#   print(head(apply(df[,b], 1, mean)))
-#   #head(df[,c(samplefile[samplefile$prefix==prefix[j],]$replicate)])
-#   #print(c(samplefile[samplefile$prefix==prefix[j],]$replicate))
-#   #data[[l]] <- apply(df[,c(samplefile[samplefile$prefix==prefix[j],]$replicate)], 1, mean)
-# }
