@@ -36,12 +36,6 @@ parser.add_argument('-cGSEA', action = 'store', dest = 'cgsea', help = "Set if y
 
 parser.add_argument("-keepIntermediates", action = 'store', dest = 'intermediates', help = "Variable, if set, will keep intermediate files: graphing, R session, tracks, etc.")
 
-#parser.add_argument("-PC2", action = 'store', dest = "pc2", help = "Set if PC2 output text files are wanted")
-
-#parser.add_argument("-pThresh", action = 'store', dest = "pThresh", help = "Set threshold for p-value: i,e. 0.95")
-
-#parser.add_argument("-processOnly", action = 'store', dest = "pOnly", help = "Only process data until replicate wise run point")
-
 results = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : - %(pathname)s - %(levelname)-8s : %(processName)s : %(message)s')
@@ -96,7 +90,7 @@ groupings_excl = []
 groupings_sizes = []
 isGrouping = False
 startdir = os.getcwd()
-
+currGroups = []
 
 with open(results.input, 'r') as input:
     for line in input:
@@ -117,9 +111,13 @@ with open(results.input, 'r') as input:
             destinations.append(temp[3])
             groupings.append(temp[2])
             if temp[2] not in groupings_excl:
+                currGroups.clear()
+                currGroups.append(temp[1])
                 groupings_excl.append(temp[2])
                 groupings_sizes.append(0)
-            groupings_sizes[groupings_excl.index(temp[2])] += 1
+                groupings_sizes[groupings_excl.index(temp[2])] += 1
+            if temp[1] not in currGroups:
+                groupings_sizes[groupings_excl.index(temp[2])] += 1
         else:
             print("Error in input file formatting. Exiting.")
             sys.exit(1)
@@ -381,7 +379,7 @@ if results.cgsea is not None:
         geneBedName = results.genome.lower() + "_gene_pos.bed"
         pos = diffFile.index("full_compartment_details") -1
         name = diffFile[:pos]
-        cmd = "python " + os.path.join(scriptdir, "cgsea.py") + " -geneBed " + os.path.join(scriptdir, geneBedName) + " -differentialFile " + diffFile + " -cGSEAfile ../" + results.cgsea + " -prefix " + name + " -outputFileName GSEA_" + name
+        cmd = "python " + os.path.join(scriptdir, "cgsea.py") + " -differentialFile " + diffFile + " -cGSEAfile ../" + results.cgsea + " -prefix " + name + " -outputFileName GSEA_" + name
         print(cmd)
         os.system(cmd)
     os.chdir("..")
