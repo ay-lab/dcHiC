@@ -22,7 +22,7 @@ parser.add_argument("-nGroups", action = 'store', dest = 'numGroups', help = "Nu
 
 parser.add_argument("-groups", action = "append", dest = "groupNames", help = "Names of groups")
 
-parser.add_argument("-exp", action = 'append', dest = 'expNames', help = "append a name") # same order as exp1, exp2, etc.  -- no longer used
+parser.add_argument("-exp", action = 'append', dest = 'expNames', help = "append a name") # same order as exp1, exp2, etc.  
 
 parser.add_argument("-chr", action = 'append', dest = 'chrs', help = "add chromosomes")
 
@@ -98,7 +98,7 @@ legend_els = []
 for a in range(int(results.numExp)):
     legend_els.append(Line2D([0], [0], color=colors[a], lw=2, label=results.expNames[a]))
 
-plt.legend(handles=legend_els, loc='upper right')
+plt.legend(handles=legend_els, loc='upper center', bbox_to_anchor=(0.5, -0.15), shadow=True)
     
 plt.savefig('experiment_coordinates.png', bbox_inches='tight', dpi = 600)
 plt.close()
