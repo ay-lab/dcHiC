@@ -4,11 +4,6 @@ path = args[length(args)]
 source(file.path(path,"armcorrection.R"))
 source(file.path(path,"selectpc.R"))
 
-# Rscript --vanilla Hier.R [args]
-# Complete Hierarchy: MvsM.R Matrix_1 Matrix_2 ... M1 M2 M3 ... Name1 Name2 ... NumLevels NumElements NumLinesInMatrix
-# numLevels includes a "0th" level
-# MvsMvsM: Matrix_1 Matrix_2 ... G1 G2 ... Name1 Name2 NumGroups NumElements NumLinesInMatrix
-
 dataPath <- args[length(args)-1]
 selectedGenome <- args[length(args)-2]
 selectedChr <- args[length(args)-3]
@@ -62,7 +57,7 @@ if (selectedMode != "None") {
   if (dataPath == "None") {
     res.hmfa <- armcorrection(obj=res.hmfa, genome=selectedGenome, pc=pcNum, chr=selectedChr, resolution=selectedRes, choice=selectedMode)
   } else {
-    res.hmfa <- armcorrection(obj=res.hmfa, genome=selectedGenome, pc=pcNum, chr=selectedChr, resolution=selectedRes, choice=selectedMode, folder = dataPath)
+    res.hmfa <- armcorrection(obj=res.hmfa, genome=selectedGenome, pc=pcNum, chr=selectedChr, resolution=selectedRes, choice=selectedMode, folder = normalizePath(dataPath))
   }
 }
 
