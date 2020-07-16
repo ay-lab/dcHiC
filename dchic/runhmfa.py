@@ -79,7 +79,7 @@ groupings_excl = []
 groupings_sizes = []
 isGrouping = False
 startdir = os.getcwd()
-
+currGroups = []
 
 with open(results.input, 'r') as input:
     for line in input:
@@ -100,9 +100,13 @@ with open(results.input, 'r') as input:
             destinations.append(temp[3])
             groupings.append(temp[2])
             if temp[2] not in groupings_excl:
+                currGroups.clear()
+                currGroups.append(temp[1])
                 groupings_excl.append(temp[2])
                 groupings_sizes.append(0)
-            groupings_sizes[groupings_excl.index(temp[2])] += 1
+                groupings_sizes[groupings_excl.index(temp[2])] += 1
+            if temp[1] not in currGroups:
+                groupings_sizes[groupings_excl.index(temp[2])] += 1
         else:
             print("Error in input file formatting. Exiting.")
             sys.exit(1)
