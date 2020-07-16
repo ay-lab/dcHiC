@@ -425,7 +425,7 @@ else:
                 output.write(firstColVal + "\t" + str(big_group_arr[bigiterator][int((i-commonMin)/expRes)]) + "\n")
     
     if results.groupings is not None:
-        groupNum = 0
+        groupNum = 0                    
         for iterator in range(len(results.groupings)):
             newName = results.groupings[iterator] + "_grouping.txt"
             #numGroups = results.group
@@ -436,9 +436,9 @@ else:
                     totalVal = 0
                     for smalliterator in range(groupNum, groupNum + int(results.groupingNums[iterator])):
                         totalVal += big_group_arr[smalliterator][int((i-commonMin)/expRes)]
-                        groupNum += 1
                     avgVal = float(totalVal) / int(results.groupingNums[iterator])
                     output.write(firstColVal + "\t" + str(avgVal) + "\n")
+            groupNum += int(results.groupingNums[iterator])
     
     def isSameSign(a, b):
         a = float(a)
