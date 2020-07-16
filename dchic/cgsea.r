@@ -25,7 +25,6 @@ cgse <- function(dcomp.file, gene_pos, organism='Homo.sapiens', go_enrich = FALS
     write.table(na.omit(dcomp), file=paste0("Genes.",basename(dcomp.file)), row.names=F, sep="\t", quote=F)
     
     stop("Stopped for cGSEA. Not an error. Change 'go_enrich' field in cgsea.r if you would like to perform GO analysis instead.")
-  
   }
   
   else {
