@@ -97,7 +97,7 @@ Create a file called input.txt for dcHiC with the format below. The replicate, n
 replicate   name    (grouping)   directory
 ```
 
-#### Important Note: Be sure names do not include underscores (due to naming conventions in-program)
+#### Important Note: We are aware it isn't ideal, but be sure names do not include underscores or hyphens (due to naming conventions in-program). Working on an update to resolve this issue. 
 
 The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
 
