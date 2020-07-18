@@ -139,7 +139,7 @@ dcHiC can be run from top to bottom or it can be run in a "modular" setting. See
 
 ## Visualization Input
 
-Visualization can be run afterward using igvtrack.R, which takes two arguments. The first is an input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ use the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
+Visualization can be run afterward using igvtrack.R, which takes two arguments. The first is a specified genome; the second is the input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ use the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
 
 ```bash
 file                     name          group
@@ -151,8 +151,8 @@ file                     name          group
 
 With this, run:
 ```bash
-Rscript /path/to/igvtrack.R [visualization file] [genome]
-Rscript /path/to/igvtrack.R  visualization.txt mm10 # an example
+Rscript /path/to/igvtrack.R [genome] [visualization file]
+Rscript /path/to/igvtrack.R  mm10 viz.txt # an example
 ```
 
 ## Run dcHiC In Modular Fashion
