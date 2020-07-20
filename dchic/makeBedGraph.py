@@ -25,9 +25,10 @@ parser.add_argument("-combined", action = 'store', dest = 'combined', help = "Us
 results = parser.parse_args()
 
 if results.combined is None:
-    outputLabel = "chr_" + results.chr + "exp_" + results.exp
+    outputLabel = "chr_" + results.chr + "_exp_" + results.exp
     chrLabel = "chr" + results.chr
     outputname = "HMFA_" + outputLabel + ".bedGraph"
+    print(outputname)
     if results.pc2 is not None:
         outputname = "PC2_" + outputLabel + ".bedGraph"
     
@@ -70,7 +71,10 @@ else:
     firstfile = True
     for file in pcfilelist:
         namearr = file.split("_")
-        prefixes.append(namearr[1]) # get the prefix
+        newstr = namearr[1]
+        if "-" in namearr[1]:
+            newstr = namearr[1].replace("-", ".")
+        prefixes.append(newstr) # get the prefix
         with open(file, "r") as bg:
             bg.readline()
             bgvals = []
@@ -103,33 +107,3 @@ else:
                 finalfile.write(vals[b][a] + "\t")
             finalfile.write("\n")
     os.chdir("..")
-    
-# =============================================================================
-#     bedGraphList = glob.glob("*bedGraph*")
-#     firstfile = True
-#     prefixes = []
-#     for file in bedGraphList:
-#         namearr = file.split("_")
-#         prefixes.append(namearr[2].split(".")[0]) # get the prefix
-#         with open(file, "r") as bg:
-#             bg.readline()
-#             bgvals = []
-#             for line in bg:
-#                 line = line.strip().split()
-#                 vals.append(line[3])
-#                 if firstfile:
-#                     bins1.append(line[1])
-#                     bins2.append(line[2])
-#                 else:
-#                     continue
-#     combname = "chr" + results.chr + ".PC.coordinates.txt"
-#     with open(combname, "w") as finalfile:
-#         for p in prefixes:
-#             finalfile.write(p + "\t")
-# =============================================================================
-            
-                
-                
-                
-    
-
