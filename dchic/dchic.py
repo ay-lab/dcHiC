@@ -73,12 +73,18 @@ if results.analysis is not None:
 # Scanning input
 # =============================================================================
 
-chrlist = []
+tempchrlist = []
 with open(results.chrs, "r") as input:
     for line in input:
         a = line.strip()
-        chrlist.append(a)
-        
+        tempchrlist.append(a)
+
+chrlist = [] # Remove Duplicates, if any
+for chrelem in tempchrlist:
+    if chrelem not in chrlist:
+        chrlist.append(chrelem)
+print(chrlist)
+     
 names = []
 groups = [] # layer 1 of organization 
 groups_excl = []
@@ -190,10 +196,10 @@ def chr_process(chrNum):
         shutil.move(pcaFileLocation, "pcFiles")
         pcaFileLocation = "pc2_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
         shutil.move(pcaFileLocation, "pcFiles")
-            
+        
     for x in range(1, (len(groups_excl)+1)):
         pcaFileLocation = "hmfa_" + str(groups_excl[x-1]) + "_exp_" + str(x) + ".txt" # this will have to change if naming conventions change
-        cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " + str(x)
+        cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " +  str(groups_excl[x-1])
         logging.debug(cmd)
         os.system(cmd)  
 
@@ -262,12 +268,12 @@ if results.par is None:
                 cmd = cmd + " -prePath " + os.path.join(elem, file_path)
         print("\n" + cmd + "\n")
         os.system(cmd)
-        for file in glob.glob("BalancedChr*"):
-            exp_num = file.split("_")[2].split(".")[0]
-            newname = file.split("_")[0] + "_exp_" + names[int(exp_num)-1] + ".txt"
-            command = "mv " + file + " " + newname
-            os.system(command)
-            shutil.move(newname, newdir)
+        #for file in glob.glob("BalancedChr*"):
+        #    exp_num = file.split("_")[2].split(".")[0]
+        #    newname = file.split("_")[0] + "_exp_" + names[int(exp_num)-1] + ".txt"
+        #    command = "mv " + file + " " + newname
+        #    os.system(command)
+        #    shutil.move(newname, newdir)
         for file in glob.glob("hmfa_*"):
             shutil.move(file, newdir)
         iterator = 1
@@ -323,25 +329,23 @@ else:
     logging.debug("Pooling complete.")
 
 # =============================================================================
-# Keep Intermediates + Re-name bedGraphs
+# Keep/Remove Intermediates 
 # =============================================================================
 
 for chrNum in chrlist:
     print(os.getcwd())
     os.chdir("chr_" + chrNum)
-    for file in glob.glob("HMFA*"): # this goes one at a time
-        exp_num = file.split("_")[3].split(".")[0]
-        newname = file.split("_")[0] + "_chr" + chrNum + "_" + groups_excl[int(exp_num)-1] + ".bedGraph"
-        command = "mv " + file + " " + newname
-        os.system(command)
+    # for file in glob.glob("HMFA*"): # this goes one at a time
+    #     exp_num = file.split("_")[3].split(".")[0]
+    #     newname = file.split("_")[0] + "_chr" + chrNum + "_" + groups_excl[int(exp_num)-1] + ".bedGraph"
+    #     command = "mv " + file + " " + newname
+    #     os.system(command)
     if results.intermediates is None:
         for file in glob.glob("compartmentSwitch_*"):
             os.remove(file)
         for file in glob.glob("Rsession*"):
             os.remove(file)
         for file in glob.glob("*.bed"):
-            os.remove(file)
-        for file in glob.glob("tracks*ini"):
             os.remove(file)
     os.chdir("..")
     
@@ -413,5 +417,3 @@ with open("chr_info.txt", "w") as info:
             pcNum = lengthdoc.readline()
         info.write("Chromosome " + str(chrNum) + ": PC " + str(pcNum)+"\n")
         os.chdir("..")
-
-
