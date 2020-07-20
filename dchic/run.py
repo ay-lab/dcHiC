@@ -173,7 +173,7 @@ for i in range(numChr) :
     for j in range(numExp) :
        jtemp = j + 1
        itempos = itemp * jtemp - 1
-       newname = "BalancedChrMatrix_" + "exp_" + str(j+1) + ".txt" # this is done in the order originally presented via command line input
+       newname = "BalancedChrMatrix_" + "exp_" + results.expNames[j] + ".txt" # this is done in the order originally presented via command line input
        nameslist.append(newname)
        with open(results.tag_list[itempos], "r") as input:
            with open(newname, "w") as output: 
