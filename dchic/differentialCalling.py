@@ -19,9 +19,9 @@ import sys
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-inputFile", action = 'store', dest = 'inputfile', help = "input text file (right now is input.txt)")
+parser.add_argument("-inputFile", action = 'store', dest = 'inputfile', help = "input text file (input.txt)")
 
-parser.add_argument("-chrFile", action = 'store', dest = 'chr', help = "Chr file")
+parser.add_argument("-chrFile", action = 'store', dest = 'chr', help = "Chr file, same as one used in dchic.py")
 
 parser.add_argument("-makePlots", action = 'store', dest = 'makePlots', help = "Set to true if you want plots to be made. DEBUG feature. Set true by default.")
 
@@ -111,9 +111,20 @@ def checkInputs():
 def makeSampleFile():
     global names
     global groups
+    global groupings
     print("Sample File in Progress")
-    print(names)
-    print(groups)
+    #print(names)
+    #print(groups)
+    for a in range(len(names)):
+        if "-" in names[a]:
+            names[a] = names[a].replace("-", ".")
+    for a in range(len(groupings)):
+        if "-" in groupings[a]:
+            groupings[a] = groupings[a].replace("-", ".")
+    for a in range(len(groups)):
+        if "-" in groups[a]:
+            groups[a] = groups[a].replace("-", ".")
+            
     with open("samplefile.txt", "w") as outf:
         if isGrouping:
             outf.write("replicate\tprefix\tgroup\n")
@@ -232,6 +243,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-                   
-                        
-            
+                  
