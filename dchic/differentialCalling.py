@@ -51,11 +51,17 @@ groupings_sizes = []
 isGrouping = False
 startdir = os.getcwd()
 
-chrlist = []
-with open(results.chr, "r") as input:
+tempchrlist = []
+with open(results.chrs, "r") as input:
     for line in input:
         a = line.strip()
-        chrlist.append(a)
+        tempchrlist.append(a)
+
+chrlist = [] # Remove Duplicates, if any
+for chrelem in tempchrlist:
+    if chrelem not in chrlist:
+        chrlist.append(chrelem)
+print(chrlist)
 
 if isGrouping == False:
     if (len(names) != len(groups)):
@@ -192,6 +198,8 @@ def getRepParams():
             chrTag = "Chr" + str(Chr)
             for group in range(len(groups_excl)):  
                 size = group_sizes[group]
+                if size < 2: # Change made to accomodate some non-replicate data
+                    continue
                 destpos = 0
                 for c in range(group):
                     destpos += group_sizes[c]
@@ -243,4 +251,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-                  
