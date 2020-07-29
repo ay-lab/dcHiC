@@ -61,12 +61,6 @@ if results.analysis is not None:
 # =============================================================================
 # Scanning input
 # =============================================================================
-
-chrlist = []
-with open(results.chrs, "r") as input:
-    for line in input:
-        a = line.strip()
-        chrlist.append(a)
         
 names = []
 groups = [] # layer 1 of organization 
@@ -138,15 +132,15 @@ os.system(cmd)
 
 for x in range(1, (len(groups_excl)+1)):
     pcaFileLocation = "hmfa_" + str(groups_excl[x-1]) + "_exp_" + str(x) + ".txt" # this will have to change if naming conventions change
-    cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " + str(x)
+    cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " + str(groups_excl[x-1])
     print(cmd)
     os.system(cmd)
 
-for file in glob.glob("HMFA*"): # this goes one at a time
-    exp_num = file.split("_")[3].split(".")[0]
-    newname = file.split("_")[0] + "_chr" + chrNum + "_" + groups_excl[int(exp_num)-1] + ".bedGraph"
-    command = "mv " + file + " " + newname
-    os.system(command)
+#for file in glob.glob("HMFA*"): # this goes one at a time
+#    exp_num = file.split("_")[3].split(".")[0]
+#    newname = file.split("_")[0] + "_chr" + chrNum + "_" + groups_excl[int(exp_num)-1] + ".bedGraph"
+#    command = "mv " + file + " " + newname
+#    os.system(command)
 
 os.mkdir("pcFiles")
 for x in range(1, (len(names)+1)):
@@ -154,3 +148,7 @@ for x in range(1, (len(names)+1)):
     shutil.move(pcaFileLocation, "pcFiles")
     pcaFileLocation = "pc2_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
     shutil.move(pcaFileLocation, "pcFiles")
+
+os.mkdir("comptSwitch")
+for a in glob.glob("compartmentSwitch*"):
+    shutil.move(a, "comptSwitch")
