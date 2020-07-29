@@ -50,6 +50,7 @@ Other Dependencies:
 - bedtools
 - Java 11+ (if you wish to perform gene set enrichment analysis)
 - cooler (only if pre-processing _.cool_ files)
+- R R.utils (if visualizing)
 
 ## About dcHiC
 
@@ -69,7 +70,7 @@ Visualization is performed through IGV.js (package igv-reports), which creates s
 
 ### Compartmental Gene Set Analysis (cGSEA) 
 
-To analyze the biological significance of differential compartments, dcHiC implements a pre-ranked GSEA (ranked by the -log10 of the p-values, m-distance, or dZsc). The gene set file should be specified by the user. 
+To analyze the biological significance of differential compartments, dcHiC implements a pre-ranked GSEA (ranked by the -log10 of the p-values, m-distance, or dZsc). The gene set file should be specified by the user. This is usable but in development form. 
 
 ## Input File(s) Specifications
 
@@ -159,7 +160,7 @@ Rscript /path/to/igvtrack.R  mm10 viz.txt # an example
 
 Some run cases require a modular setup. For instance, if you want to run a large number (several dozens or more) of samples, it will be time-inefficient to run these in sequence with dchic.py and memory-intensive to run these in parallel. For these cases, dcHiC can be run in a modular fashion (by chromosome), a feature useful in environments like computing clusters where one simply needs to submit a job per chromosome. 
 
-To run it for one particular chromosome XX, create a directory for that chromosome named "chr_XX" and use runhmfa.py (many of the same arguments as above). Rather than specifying the directory of input files in the last column, now specify the file itself for that chromosome. 
+To run it for one particular chromosome XX, create a directory for that chromosome named "chr_XX" and use runhmfa.py (many of the same arguments as above). Rather than specifying the directory of input files in the last column, now specify the O/E correlation matrix file itself for that chromosome ("chrXX.matrix", for instance). 
 
 After running several chromosomes separately, you can then go to the global directory that encompasses those directories and run differentialCalling.py (logical arguments), cgsea.py, and/or igvtrack.R. 
 
