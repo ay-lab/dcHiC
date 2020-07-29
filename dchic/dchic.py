@@ -376,7 +376,10 @@ os.system(cmd)
 # =============================================================================
 
 if results.cgsea is not None:
-    os.chdir("DifferentialCompartment")
+    if os.path.isdir("DifferentialCompartment") == False:
+        print("ERROR: Differential Calling Not Done. Exit")
+    else:
+        os.chdir("DifferentialCompartment")
     for diffFile in glob.glob("*full_compartment_details*"):
         if "Genes." in diffFile:
             continue
