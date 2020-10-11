@@ -9,6 +9,7 @@ Created on Sat Mar 14 11:44:50 2020
 import argparse
 import glob
 import os
+import math
 
 parser = argparse.ArgumentParser()
 
@@ -21,6 +22,10 @@ parser.add_argument("-exp", action = 'store', dest = 'exp', help = "experiment l
 parser.add_argument("-PC2", action = 'store', dest = 'pc2', help = "DEBUG FEATURE: Use this for PC2; different naming")
 
 parser.add_argument("-combined", action = 'store', dest = 'combined', help = "Used for combination to large bedGraph in visualization step")
+
+parser.add_argument("-res", action = 'store', dest = 'res', help = "Resolution.")
+
+parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Blacklist, if used.")
 
 results = parser.parse_args()
 
@@ -35,7 +40,7 @@ if results.combined is None:
     with open(results.eigfile, "r") as file:
         with open(outputname, "w") as output:
             trash = file.readline()
-            output.write("track name=\"" + outputLabel + "\"  yLineMark=\"0.0\" " + "alwaysZero=on maxHeightPixels=100:75:11 visibility=full viewLimits=-1:1 " + "autoScale=on type=bedGraph\n")
+            #output.write("track name=\"" + outputLabel + "\"  yLineMark=\"0.0\" " + "alwaysZero=on maxHeightPixels=100:75:11 visibility=full viewLimits=-1:1 " + "autoScale=on type=bedGraph\n")
             line = file.readline()
             linez = line.split()
             lastBin = str(linez[0])[linez[0].index(".")+1:len(linez[0])]
@@ -52,21 +57,38 @@ if results.combined is None:
                 line = file.readline()
 
 else:
-# go into pcFiles
+    if results.blacklist is not None:
+        expRes = int(results.res)
+        blacklistedregions = [] # only for this chr
+        thisChrTag = "chr" + results.chr
+        with open(results.blacklist, "r") as bfile:
+            for line in bfile:
+                l = line.strip().split()
+                chrTag = l[0]
+                if chrTag != thisChrTag:
+                    continue
+                start = int(l[1])
+                end = int(l[2])
+                badstart = math.ceil(start/expRes) * expRes
+                badend = math.floor(end/expRes) * expRes
+                for a in range(badstart, badend, expRes):
+                    badbin = chrTag + "." + str(a)
+                    blacklistedregions.append(badbin)
+    # go into pcFiles
     chrtag = "chr_" + results.chr
     pcFiles = os.path.join(chrtag, "pcFiles")
-    pc_decision_file = os.path.join(chrtag, "pc_decision.txt")
-    with open(pc_decision_file, "r") as pc_file:
-        pc_decision = int(pc_file.readline().strip())
+    #pc_decision_file = os.path.join(chrtag, "pc_decision.txt")
+    #with open(pc_decision_file, "r") as pc_file:
+    #    pc_decision = int(pc_file.readline().strip())
     os.chdir(pcFiles)
     prefixes = []
     vals = []
     bins = []
-    if pc_decision == 1:
-        globterm = "pc1"
-    else:
-        globterm = "pc2"
-    pcfilelist = glob.glob(globterm + "*")
+    #if pc_decision == 1:
+    #    globterm = "pc1"
+    #else:
+    #    globterm = "pc2"
+    pcfilelist = glob.glob("pc_*")
     pcfilelist.sort(key=os.path.getmtime) # may be changed in the future 
     firstfile = True
     for file in pcfilelist:
@@ -80,6 +102,9 @@ else:
             bgvals = []
             for line in bg:
                 line = line.strip().split()
+                if results.blacklist is not None:
+                    if line[0] in blacklistedregions:
+                        continue
                 bgvals.append(line[1])
                 if firstfile:
                     bins.append(line[0])
@@ -107,3 +132,4 @@ else:
                 finalfile.write(vals[b][a] + "\t")
             finalfile.write("\n")
     os.chdir("..")
+    
