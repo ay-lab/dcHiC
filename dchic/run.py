@@ -12,6 +12,7 @@ import re
 import sys
 import bisect
 import glob
+import math
 
 parser = argparse.ArgumentParser() # 
 
@@ -37,11 +38,15 @@ parser.add_argument('-chrNum', action = 'store', dest = 'chrNum', help = 'chromo
 
 parser.add_argument('-genome', action = 'store', dest = 'genome', help = "Used to determine eigenvector sign. Options: hg38, hg19, mm10, mm9 [If not provided, analysis will skip this step]")
 
-parser.add_argument('-signAnalysis', action = 'store', dest = 'analysis', help = "Used to determine which data will be used for determining eigenvector sign. Options: TSS, GC content. [If not provided, analysis will skip this step.]")
+#parser.add_argument('-signAnalysis', action = 'store', dest = 'analysis', help = "Used to determine which data will be used for determining eigenvector sign. Options: TSS, GC content. [If not provided, analysis will skip this step.]")
 
 parser.add_argument("-alignData", action = 'store', dest = 'goldenpath', help = "Absolute location of GoldenPath data")
 
 parser.add_argument('-grouping', action = 'store', dest = 'grouping', help = 'DEBUG FEATURE: Do average of eigenvectors (grouping) for comparisons -- 1 for true and 2 for false')
+
+parser.add_argument("-blacklist", action = "store", dest = "blacklist", help = "ENCODE blacklisted regions - sorted, > 1mb")
+
+parser.add_argument("-ncp", action = 'store', dest = "ncp", help = "ncp to use / scan in HMFA.")
 
 # =============================================================================
 # SYSTEM CHECKS
@@ -168,9 +173,9 @@ else:
     for lineNum in DifferentPositions:
         print(lineNum)
 
-for i in range(numChr) :
+for i in range(numChr):
     itemp = i + 1
-    for j in range(numExp) :
+    for j in range(numExp):
        jtemp = j + 1
        itempos = itemp * jtemp - 1
        newname = "BalancedChrMatrix_" + "exp_" + results.expNames[j] + ".txt" # this is done in the order originally presented via command line input
@@ -201,10 +206,69 @@ for i in range(numChr) :
                                        output.write("\t" + temp[x])
                            output.write("\n") # changed to prevent eol error
 
+removedpositions = []
+if results.blacklist is not None:
+    blacklistedregions = [] # only for this chr
+    thisChrTag = "chr" + results.chrNum
+    with open(results.blacklist, "r") as bfile:
+        for line in bfile:
+            l = line.strip().split()
+            chrTag = l[0]
+            if chrTag != thisChrTag:
+                continue
+            start = int(l[1])
+            end = int(l[2])
+            badstart = math.ceil(start/expRes) * expRes
+            badend = math.floor(end/expRes) * expRes
+            for a in range(badstart, badend, expRes):
+                badbin = chrTag + "-" + str(a)
+                blacklistedregions.append(badbin)
+    #print(blacklistedregions)
+    for i in range(numChr):
+        itemp = i + 1
+        for j in range(numExp):
+           badregions = []
+           badcoords = []
+           jtemp = j + 1
+           itempos = itemp * jtemp - 1
+           lines = []
+           name = "BalancedChrMatrix_" + "exp_" + results.expNames[j] + ".txt" 
+           outline = ""
+           with open(name, "r") as infile:
+               line1 = infile.readline()
+               l1data = line1.strip().split()
+               for a in range(len(l1data)):
+                   if l1data[a] in blacklistedregions:
+                       badregions.append(a) # index
+                       badcoords.append(l1data[a])
+                   else:
+                       outline = outline + "\t" + l1data[a]
+               for line in infile:
+                   lines.append(line.strip().split()[1:])
+           removedpositions.append(badcoords)
+           #print(badregions) 
+           with open(name, "w") as newfile:
+               newfile.write(outline + "\n")
+               for a in range(len(lines)):
+                   if a in badregions:
+                       continue
+                   else:
+                       outline = l1data[a]
+                       for b in range(len(lines[a])):
+                           if b in badregions:
+                               continue
+                           else:
+                               outline = outline + "\t" + lines[a][b]
+                       newfile.write(outline + "\n") 
+#print(removedpositions)
+for a in range(len(commonlists)):
+    commonlists[a] = [x for x in commonlists[a] if x not in removedpositions[a]]
+
 commonbins = []
 for bin_pos in commonlists[0]:
     commonbins.append(int(bin_pos[bin_pos.index("-")+1:]))
-
+    
+print(len(commonlists[a]))
 cmd = "Rscript --vanilla " + (os.path.join(scriptdir, "Hier.R")) + " "
 
 # Rscript --vanilla Hier.R BalancedChrMatrix_exp_1.txt BalancedChrMatrix_exp_2.txt BalancedChrMatrix_exp_3.txt BalancedChrMatrix_exp_4.txt 3 1 mcf7 mcf10a t47d hmec cancer normal 2 4 337
@@ -217,39 +281,34 @@ for tempvar3 in results.expNames:
     cmd = cmd + " " + tempvar3
 for tempvar4 in results.groupNames:
     cmd = cmd + " " + tempvar4
-cmd = cmd+ " " + str(results.numGroups)
-cmd = cmd+ " " + str(numExp)
+cmd = cmd + " " + str(results.numGroups)
+cmd = cmd + " " + str(numExp)
 cmd = cmd + " " + str(len(commonlists[0]))
 chrTag = "chr" + str(results.chrNum)
 
-if results.genome is not None and results.analysis is not None: 
-    cmd = cmd + " " + str(results.analysis) + " " + str(results.res) + " " + chrTag + " " + str(results.genome) 
+#if "p" in chrTag:
+#    chrTag = chrTag[:chrTag.index("p")]
+#if "q" in chrTag:
+#    chrTag = chrTag[:chrTag.index("q")]
+
+if results.genome is not None: 
+    cmd = cmd + " " + str(results.res) + " " + chrTag + " " + str(results.genome) 
 else:
-    cmd = cmd + " None None None None"
+    cmd = cmd + " None None None"
 if results.goldenpath is None:
     cmd = cmd + " None"
 else:
     cmd = cmd + " " + str(results.goldenpath)
+if results.ncp is not None:
+    cmd = cmd + " " + results.ncp
+else:
+    cmd = cmd + " " + 2
 cmd = cmd + " " + scriptdir
 
 print("\n" + cmd)
-print("R OUTPUT:\n")
+print("\nR OUTPUT:\n")
 os.system(cmd)
 print("\nR function done!\n")
-
-pcNum = 0
-
-with open("pc_decision.txt", "r") as pcDecisionFile:
-    pcNum = int(pcDecisionFile.readline())
-
-if pcNum == 0:
-    print("ERROR: selectpc.R premature exit.")
-    sys.exit(1)
-    
-#if results.genome is not None and results.analysis is not None:
-#    chrTag = "chr" + str(results.chrNum)
-#    cmd = "Rscript armcorrection.R " + str(results.analysis) + " " + str(results.res) + " " + chrTag + " " + str(pcNum) + " " + str(results.genome)
-#    os.system(cmd)
 
 oneChrList = []
 for tv1 in range(numChr):
@@ -272,17 +331,6 @@ for topone in oneChrList:
     for bottomone in topone:
         temp_list.append(float(bottomone))
     chrExpBins.append(temp_list)
-
-pc2ExpBins = []
-for tv2 in range(numExp):
-    name = "pc2_chrRAW_" + results.expNames[tv2] + "_exp_" + str(tv2+1) + ".txt"
-    dmfa_file = open(name, "r")
-    dmfa_file.readline()
-    exp_list = []
-    for tv3 in range(len(commonlists[tv1])):
-        el_list = dmfa_file.readline().split()
-        exp_list.append(float(el_list[1]))
-    pc2ExpBins.append(exp_list)
     
 # =============================================================================
 # Earlier, the balanced chromosome matrix is created by only taking common values. Those values not shared by all now need to be restored. This restores them by taking the average of the nearest existing values to any missing one.  
@@ -290,14 +338,22 @@ for tv2 in range(numExp):
       
 commonMax = max(commonbins)
 commonMin = min(commonbins)
-completeCoverage = []
+#completeCoverage = []
 #PC1  
+print(len(chrExpBins))
 for ls in range(numExp):
-    newName = "pc1_" + results.expNames[ls] + "_exp_" + str(ls+1) + ".txt"
+    print("Removed Positions")
+    print(removedpositions[ls])
+    newName = "pc_" + results.expNames[ls] + "_exp_" + str(ls+1) + ".txt"
     with open(newName, "w") as hmfaFile:
         hmfaFile.write("\t\t\tDim.1\n")
         for i in range(commonMin, commonMax, expRes):
             firstColVal = "chr" + str(results.chrNum) + "." + str(i)
+            otherFirstCol = "chr" + str(results.chrNum) + "-" + str(i)
+            if otherFirstCol in removedpositions[ls]:
+                #print("Removed " + otherFirstCol)
+                hmfaFile.write(firstColVal + "\t0\n")
+                continue
             if i in commonbins:
                 pos = bisect.bisect_left(commonbins, i)
                 hmfaFile.write(firstColVal + "\t" + str(chrExpBins[ls][pos]) + "\n")
@@ -310,28 +366,6 @@ for vt in range(numExp):
     name = "hmfa_chrRAW_" + results.expNames[vt] + "_exp_" + str(vt+1) + ".txt"
     cmd = "rm " + name
     os.system(cmd)
-
-#PC2
-completeCoverage = []
-for ls in range(numExp):
-    newName = "pc2_" + results.expNames[ls] + "_exp_" + str(ls+1) + ".txt"
-    with open(newName, "w") as hmfaFile:
-        hmfaFile.write("\t\t\tDim.2\n")
-        for i in range(commonMin, commonMax, expRes):
-            firstColVal = "chr" + str(results.chrNum) + "." + str(i)
-            if i in commonbins:
-                pos = bisect.bisect_left(commonbins, i)
-                hmfaFile.write(firstColVal + "\t" + str(pc2ExpBins[ls][pos]) + "\n")
-            else:
-                leftVal = bisect.bisect_left(commonbins, i) - 1
-                rightVal = bisect.bisect_left(commonbins, i) 
-                avgVal = (pc2ExpBins[ls][rightVal] + pc2ExpBins[ls][leftVal]) / 2
-                hmfaFile.write(firstColVal + "\t" + str(avgVal) + "\n")  
-                
-for vt in range(numExp):
-    name = "pc2_chrRAW_" + results.expNames[vt] + "_exp_" + str(vt+1) + ".txt"
-    cmd = "rm " + name
-    os.system(cmd)
         
 if int(results.grouping) == 2: # Debug Feature
     doNothing = True
@@ -340,10 +374,7 @@ else:
     oneChrList = []
     numBins = 0
     for tempvar in range(numExp):
-        if pcNum == 1: 
-            newName = "pc1_" + results.expNames[tempvar] + "_exp_" + str(tempvar+1) + ".txt"
-        if pcNum == 2:
-            newName = "pc2_" + results.expNames[tempvar] + "_exp_" + str(tempvar+1) + ".txt"
+        newName = "pc_" + results.expNames[tempvar] + "_exp_" + str(tempvar+1) + ".txt"
         a = True
         exp_list = []
         with open(newName, "r") as input:
@@ -358,10 +389,7 @@ else:
         oneChrList.append(exp_list)
         
     allBins = []
-    if pcNum == 1:
-        newName = "pc1_" + results.expNames[0] + "_exp_" + str(1) + ".txt"
-    if pcNum == 2:
-        newName = "pc2_" + results.expNames[0] + "_exp_" + str(1) + ".txt"
+    newName = "pc_" + results.expNames[tempvar] + "_exp_" + str(tempvar+1) + ".txt"
     a = True
     with open(newName, "r") as input:
         for line in input:
@@ -382,11 +410,7 @@ else:
         groupArr = []
         b = True # first file in group
         for a in range(1, size+1):
-            phrase = ""
-            if pcNum == 1:
-                phrase = "pc1_*"
-            if pcNum == 2:
-                phrase = "pc2_*"
+            phrase = "pc_*"
             for file in glob.glob(phrase):
                 filenum = int(file.split("_")[3].split(".")[0])
                 if (a + iterator) == filenum:
@@ -420,6 +444,8 @@ else:
         newName = "hmfa_" + results.groupNames[bigiterator] + "_exp_" + str(bigiterator + 1) + ".txt"
         with open(newName, "w") as output:
             output.write("\t\t\tDim.1\n")
+            print(len(big_group_arr))
+            print(len(big_group_arr[0]))
             for i in range(commonMin, commonMax, expRes):
                 firstColVal = "chr" + str(results.chrNum) + "." + str(i)
                 output.write(firstColVal + "\t" + str(big_group_arr[bigiterator][int((i-commonMin)/expRes)]) + "\n")
@@ -435,7 +461,15 @@ else:
                     firstColVal = "chr" + str(results.chrNum) + "." + str(i)
                     totalVal = 0
                     for smalliterator in range(groupNum, groupNum + int(results.groupingNums[iterator])):
-                        totalVal += big_group_arr[smalliterator][int((i-commonMin)/expRes)]
+                        try:
+                            totalVal += big_group_arr[smalliterator][int((i-commonMin)/expRes)]
+                        except:
+                            print(len(big_group_arr))
+                            print(len(big_group_arr[0]))
+                            print(smalliterator)
+                            print(i)
+                            print(commonMin)
+                            print(expRes)
                     avgVal = float(totalVal) / int(results.groupingNums[iterator])
                     output.write(firstColVal + "\t" + str(avgVal) + "\n")
             groupNum += int(results.groupingNums[iterator])
@@ -464,6 +498,13 @@ else:
         newChrList.append(groupList)
         iterator += int(results.groups[i])
     
+    with open("lengthdoc.txt", "w") as out:
+        out.write(str(len(allBins))+"\n")
+        pos1 = str(allBins[0]).split("-")[1]
+        pos2 = str(allBins[len(allBins)-1]).split("-")[1]
+        out.write(str(pos1) + "\t" + str(pos2) + "\n")
+        #out.write(str(pcNum)) # Used in visualize.py
+    
     for a in range(len(results.groups)): ### NEED TO CHANGE BECAUSE USES newChrList / oneChrList
         for b in range(a+1, len(results.groups)):
             name = "compartmentSwitch_" + results.groupNames[a] + "_" + results.groupNames[b] + "_" + str(a+1) + "_" + str(b+1) + ".txt"
@@ -471,12 +512,3 @@ else:
                 for x in range(len(newChrList[0])):
                     if not isSameSign(newChrList[a][x], newChrList[b][x]):
                         out.write(allBins[x] + "\n")
-    
-    with open("lengthdoc.txt", "w") as out:
-        out.write(str(len(allBins))+"\n")
-        pos1 = str(allBins[0]).split("-")[1]
-        pos2 = str(allBins[len(allBins)-1]).split("-")[1]
-        out.write(str(pos1) + "\t" + str(pos2) + "\n")
-        out.write(str(pcNum)) # Used in visualize.py
-        
-    
