@@ -30,11 +30,23 @@ parser.add_argument("-alignData", action = 'store', dest = 'goldenpath', help = 
 
 parser.add_argument('-genome', action = 'store', dest = 'genome', help = "Used to determine eigenvector sign. Options: hg38, hg19, mm10, mm9 [If not provided, analysis will skip this step]")
 
-parser.add_argument('-signAnalysis', action = 'store', dest = 'analysis', help = "Used to determine which data will be used for determining eigenvector sign. Options: \"tss\", \"gc\". [If not provided, analysis will skip this step.]")
+#parser.add_argument('-signAnalysis', action = 'store', dest = 'analysis', help = "Used to determine which data will be used for determining eigenvector sign. Options: \"tss\", \"gc\". [If not provided, analysis will skip this step.]")
 
-parser.add_argument('-cGSEA', action = 'store', dest = 'cgsea', help = "Set if you want GSEA performed. File with basic cGSEA specifications as specified in documentation... Do not include field if cGSEA not wanted.")
+#parser.add_argument('-cGSEA', action = 'store', dest = 'cgsea', help = "Set if you want GSEA performed. File with basic cGSEA specifications as specified in documentation... Do not include field if cGSEA not wanted.")
 
 parser.add_argument("-keepIntermediates", action = 'store', dest = 'intermediates', help = "Variable, if set, will keep intermediate files: graphing, R session, tracks, etc.")
+
+parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Path to bed file with blacklisted regions not to include. Do not include if not wanted.")
+
+parser.add_argument("-ncp", action = 'store', dest = 'ncp', help = "Number of principal components to scan/use. Default is 2.")
+
+parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
+
+parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
+
+parser.add_argument("-repParams", action = 'store', dest = 'repParams', help = "Replicate parameter file (PC variation) to use, if no replicates provided.")
+
+#parser.add_argument("-armwise", action = 'store', dest = 'arm', help = "Set to true if you have processed matrices armwise.")
 
 results = parser.parse_args()
 
@@ -42,7 +54,9 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : - %(pathname)s - 
 
 startdir = os.getcwd()
 scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    
+svthreshold = 1
+results.goldenpath = os.path.abspath(results.goldenpath)
+
 # =============================================================================
 # System Checks
 # =============================================================================
@@ -58,16 +72,9 @@ if results.genome is not None:
         print("Bad genome entered. Try again. System exit.")
         sys.exit(1)
 
-if results.analysis is not None:
-    validAnalyses = ["tss", "gc"]
-    valid = False
-    for v in validAnalyses:
-        if results.analysis == v:
-            valid = True
-            break
-    if valid == False:
-        print("Bad analysis method entered. Try again. System exit.")
-        sys.exit(1)
+else:
+    print("Missing genome option. System exit.")
+    sys.exit(1)
 
 # =============================================================================
 # Scanning input
@@ -97,67 +104,145 @@ groupings_sizes = []
 isGrouping = False
 startdir = os.getcwd()
 currGroups = []
+numGroups = 0
+numExp = 0
 
-with open(results.input, 'r') as input:
-    for line in input:
-        if line == "\n":
-            continue
-        line = line.strip()
-        temp = line.split()
-        names.append(temp[0])
-        groups.append(temp[1])
-        if temp[1] not in groups_excl:
-            groups_excl.append(temp[1])
-            group_sizes.append(0)
-        group_sizes[groups_excl.index(temp[1])] += 1
-        if len(temp) == 3:
-            destinations.append(temp[2])
-        elif len(temp) == 4:
-            isGrouping = True
-            destinations.append(temp[3])
-            groupings.append(temp[2])
-            if temp[2] not in groupings_excl:
-                currGroups.clear()
-                currGroups.append(temp[1])
-                groupings_excl.append(temp[2])
-                groupings_sizes.append(0)
-                groupings_sizes[groupings_excl.index(temp[2])] += 1
-            if temp[1] not in currGroups:
-                groupings_sizes[groupings_excl.index(temp[2])] += 1
-        else:
-            print("Error in input file formatting. Exiting.")
-            sys.exit(1)
+filteredchrs = {}
+for elem in chrlist:
+    chrTag = elem
+    filteredchrs[chrTag] = []
+    
+if results.filter is not None:
+    numlines = 0
+    with open(results.filter, "r") as filterfile:
+        exps_list = filterfile.readline().strip().split()
+        for line in filterfile:
+            l = line.strip().split()
+            chrTag = l[0][l[0].index("chr")+3:]
+            badExps = []
+            for a in range(1, len(l)):
+                if float(l[a]) > 1:
+                    badExps.append(exps_list[a-1])
+            if chrTag in filteredchrs:     
+                for a in badExps:
+                    filteredchrs[chrTag].append(a)
+            else:
+                print("Chromosome mismatch in -chrFile input and SVfilter text file.")
 
-numGroups = len(groups_excl)
-numExp = len(names)
+if results.removal is not None:
+    with open(results.removal, "r") as removefile:
+        for line in removefile:
+            l = line.strip().split()
+            if l[0] not in filteredchrs[l[1]]:
+                filteredchrs[l[1]].append(l[0])
+    
+def getGroups(chrTag):
+    global names
+    global groups
+    global groups_excl
+    global group_sizes
+    global destinations
+    global groupings
+    global groupings_excl
+    global groupings_sizes
+    global isGrouping
+    global startdir
+    global currGroups
+    global filteredChrs
+    global numGroups
+    global numExp
+    
+    names = []
+    groups = [] # layer 1 of organization 
+    groups_excl = []
+    group_sizes = []
+    destinations = []
+    
+    groupings = [] # groupings of groups
+    groupings_excl = []
+    groupings_sizes = []
+    isGrouping = False
+    startdir = os.getcwd()
+    currGroups = []
 
+    with open(results.input, 'r') as input:
+        for line in input:
+            if line == "\n":
+                continue
+            line = line.strip()
+            temp = line.split()
+            if results.filter is not None:
+                if temp[0] in filteredchrs[chrTag]:
+                    continue
+            names.append(temp[0])
+            groups.append(temp[1])
+            if temp[1] not in groups_excl:
+                groups_excl.append(temp[1])
+                group_sizes.append(0)
+            group_sizes[groups_excl.index(temp[1])] += 1
+            if len(temp) == 3:
+                destinations.append(temp[2])
+            elif len(temp) == 4:
+                isGrouping = True
+                print("WARNING. Using SV filtering WITH two-tier grouping. Not recommended but continuing.")
+                destinations.append(temp[3])
+                groupings.append(temp[2])
+                if temp[2] not in groupings_excl:
+                    currGroups.clear()
+                    currGroups.append(temp[1])
+                    groupings_excl.append(temp[2])
+                    groupings_sizes.append(0)
+                    groupings_sizes[groupings_excl.index(temp[2])] += 1
+                if temp[1] not in currGroups:
+                    groupings_sizes[groupings_excl.index(temp[2])] += 1
+            else:
+                print("Error in input file formatting. Exiting.")
+                sys.exit(1)
+                
+        numGroups = len(groups_excl)
+        numExp = len(names)
 # =============================================================================
 # Method for parallel processing; called later
 # =============================================================================
 
 def chr_process(chrNum):
+    getGroups(chrNum)
     workdir = startdir
     os.chdir(startdir)
     newdir = "chr_" + chrNum
-    cmd = "mkdir " + newdir
-    os.system(cmd)
+    if os.path.exists(newdir) is False:
+        os.mkdir(newdir)
     os.chdir(newdir)
-    cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrNum + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
+    chrTag = chrNum    
+    #if "p" in chrNum:
+    #    chrTag = chrNum[:chrNum.index("p")]
+    #if "q" in chrNum:
+    #    chrTag = chrNum[:chrNum.index("q")]
+    cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrTag + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
+    if results.ncp is not None and isinstance(results.ncp, int):
+        cmd = cmd + " -ncp " + results.ncp
+    else:
+        cmd = cmd + " -ncp 2"
     for a in group_sizes:
         cmd = cmd + " -group " + str(a)
     for a in names:
         cmd = cmd + " -expNames " + a
     for a in groups_excl:
         cmd = cmd + " -groupNames " + a
+    if results.blacklist is not None:
+        cmd = cmd + " -blacklist " + results.blacklist
     if isGrouping:
         for g in groupings_excl:
             cmd = cmd + " -groupings " + g
         for g in groupings_sizes:
             cmd = cmd + " -groupingNums " + str(g)
     
-    if results.genome is not None and results.analysis is not None:
-        cmd = cmd + " -genome " + str(results.genome) + " -signAnalysis " + str(results.analysis)
-    
+    if results.genome is not None:
+        cmd = cmd + " -genome " + str(results.genome)
+    else:
+        print("ERROR: Specify Genome.")
+        sys.exit(1)
+        
     if results.goldenpath is not None:
         cmd = cmd + " -alignData " + str(results.goldenpath)
         
@@ -181,22 +266,24 @@ def chr_process(chrNum):
             for file in file_list:
                 if "matrix" in file:
                     a = file.find("chr")
-                    b = file.find(".")
+                    b = file.find(".") # change made with NoArm in mind
                     chrIden = (file[(a+3):b])
                     if chrIden == chrNum:
                         file_path = file
                         break
             cmd = cmd + " -prePath " + os.path.join(elem, file_path)
+
     
     print("\n" + cmd + "\n")
     os.system(cmd)    
     os.mkdir("pcFiles")
+    incr = 1
     for x in range(1, (len(names)+1)):
-        pcaFileLocation = "pc1_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
+        pcaFileLocation = "pc_" + str(names[x-1]) + "_exp_" + str(incr) + ".txt" 
         shutil.move(pcaFileLocation, "pcFiles")
-        pcaFileLocation = "pc2_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
-        shutil.move(pcaFileLocation, "pcFiles")
-        
+        incr+=1
+    
+    incr = 1
     for x in range(1, (len(groups_excl)+1)):
         pcaFileLocation = "hmfa_" + str(groups_excl[x-1]) + "_exp_" + str(x) + ".txt" # this will have to change if naming conventions change
         cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " +  str(groups_excl[x-1])
@@ -215,6 +302,9 @@ def chr_process(chrNum):
 
 if results.par is None:
     for chrNum in chrlist:
+        getGroups(chrNum)
+        print(names)
+        print(groups)
         newdir = "chr_" + chrNum
         if os.path.exists(newdir) is False:
             os.mkdir(newdir)
@@ -224,15 +314,31 @@ if results.par is None:
         print(scriptdir)
         print(numExp)
         print(numGroups)
-        cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrNum + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
+        
+        chrTag = chrNum
+        #if "p" in chrNum:
+        #    chrTag = chrNum[:chrNum.index("p")]
+        #if "q" in chrNum:
+        #    chrTag = chrNum[:chrNum.index("q")]
+            
+        cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrTag + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
+        if results.ncp is not None and isinstance(results.ncp, int):
+            cmd = cmd + " -ncp " + results.ncp
+        else:
+            cmd = cmd + " -ncp 2"
         for a in group_sizes:
             cmd = cmd + " -group " + str(a)
         for a in names:
             cmd = cmd + " -expNames " + a
         for a in groups_excl:
             cmd = cmd + " -groupNames " + a
-        if results.genome is not None and results.analysis is not None:
-            cmd = cmd + " -genome " + str(results.genome) + " -signAnalysis " + str(results.analysis)
+        if results.blacklist is not None:
+            cmd = cmd + " -blacklist " + results.blacklist
+        if results.genome is not None:
+            cmd = cmd + " -genome " + str(results.genome)
+        else:
+            print("ERROR: Specify Genome.")
+            sys.exit(1)
         if results.goldenpath is not None:
             cmd = cmd + " -alignData " + str(results.goldenpath)
         if isGrouping:
@@ -268,31 +374,23 @@ if results.par is None:
                 cmd = cmd + " -prePath " + os.path.join(elem, file_path)
         print("\n" + cmd + "\n")
         os.system(cmd)
-        #for file in glob.glob("BalancedChr*"):
-        #    exp_num = file.split("_")[2].split(".")[0]
-        #    newname = file.split("_")[0] + "_exp_" + names[int(exp_num)-1] + ".txt"
-        #    command = "mv " + file + " " + newname
-        #    os.system(command)
-        #    shutil.move(newname, newdir)
         for file in glob.glob("hmfa_*"):
             shutil.move(file, newdir)
         iterator = 1
         for x in range(1, (len(groups_excl)+1)):
             pcaFileLocation = os.path.join(newdir, "hmfa_" + str(groups_excl[x-1]) + "_exp_" + str(x) + ".txt")
-            cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " + str(x)
+            cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " + str(groups_excl[x-1])
             print(cmd)
             os.system(cmd)
         if os.path.exists("pcFiles") == False:
             os.mkdir("pcFiles")
         for x in range(1, (len(names)+1)):
-            pcaFileLocation = "pc1_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
-            shutil.move(pcaFileLocation, "pcFiles")
-            pcaFileLocation = "pc2_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
+            pcaFileLocation = "pc_" + str(names[x-1]) + "_exp_" + str(x) + ".txt" 
             shutil.move(pcaFileLocation, "pcFiles")
         shutil.move("pcFiles", newdir)
-        for file in glob.glob("*_grouping.txt"):
+        for file in glob.glob("BalancedChrMatrix*"):
             shutil.move(file, newdir)
-        for file in glob.glob("*.pdf"):
+        for file in glob.glob("*_grouping.txt"):
             shutil.move(file, newdir)
         for file in glob.glob("*.bedGraph"):
             shutil.move(file, newdir)
@@ -302,7 +400,7 @@ if results.par is None:
             shutil.move(file, newdir)
         for file in glob.glob("compartmentSwitch_*"):
             shutil.move(file, newdir)
-        for file in glob.glob("pc_decision*"):
+        for file in glob.glob("PCselect*"):
             shutil.move(file, newdir)
         if results.intermediates is None:
             for file in glob.glob("Rsession*"):
@@ -347,6 +445,10 @@ for chrNum in chrlist:
             os.remove(file)
         for file in glob.glob("*.bed"):
             os.remove(file)
+    else:
+        os.mkdir("comptSwitch")
+        for file in glob.glob("compartmentSwitch_*"):
+            shutil.move(file, "comptSwitch")
     os.chdir("..")
     
 # =============================================================================
@@ -358,8 +460,40 @@ print("FINISHED Chromosome-By-Chromosome Analysis. Now Going to Summary + Visual
 print("###################")
 
 # =============================================================================
-# Differential Calling
+# PC-Info Document
 # =============================================================================
+
+ncp = 2
+if results.ncp is not None:
+    ncp = int(results.ncp)
+
+with open("chr_info.txt", "w") as info:
+    info.write("chr\tpc.select\tsign\tExperiment\n")
+    for chrNum in chrlist:
+        getGroups(chrNum)
+        name = "chr_" + chrNum
+        os.chdir(name)
+        with open("PCselection.txt") as pcdoc: # pc1.gc  pc2.gc  id      chr     pc.select       sign    pc1.len pc2.len pc.len.warning
+            pcdoc.readline()
+            it = 0
+            numGroups = len(groups)
+            for a in range(numGroups):
+                for b in range(ncp):
+                    pcnum = b+1
+                    line = pcdoc.readline()
+                    l = line.strip().split()
+                    #print(l)
+                    if len(l) == 0:
+                        continue
+                    expname = l[len(l)-2]
+                    sign = l[3]
+                    if l[len(l)-1] == "yes":
+                        info.write(name + "\t" + str(pcnum) + "\t" + sign + "\t" + expname + "\n")
+        os.chdir("..")
+
+# # =============================================================================
+# # Differential Calling
+# # =============================================================================
 
 cmd = "python " + os.path.join(scriptdir, "differentialCalling.py") + " -inputFile " + results.input + " -chrFile " + results.chrs + " -makePlots 1 -res " + str(results.res)
 if isGrouping:
@@ -368,55 +502,32 @@ if isGrouping:
 else:
     if len(groups_excl) > 2:
         cmd = cmd + " -multiComp 1"
+if results.filter is not None:
+    cmd = cmd + "  -SVfilter " + results.filter 
+if results.removal is not None:
+    cmd = cmd + " -removeFile " + results.removal 
+if results.repParams is not None:
+    cmd = cmd + " -repParams " + results.repParams
+if results.blacklist is not None:
+    cmd = cmd + " -blacklist " + results.blacklist
 print(cmd)
 os.system(cmd)
 
 # =============================================================================
-# Compartmental Gene Set Enrichment Analysis
-# =============================================================================
-
-if results.cgsea is not None:
-    if os.path.isdir("DifferentialCompartment") == False:
-        print("ERROR: Differential Calling Not Done. Exit")
-    else:
-        os.chdir("DifferentialCompartment")
-    for diffFile in glob.glob("*full_compartment_details*"):
-        if "Genes." in diffFile:
-            continue
-        geneBedName = results.genome.lower() + "_gene_pos.bed"
-        pos = diffFile.index("full_compartment_details") -1
-        name = diffFile[:pos]
-        cmd = "python " + os.path.join(scriptdir, "cgsea.py") + " -differentialFile " + diffFile + " -cGSEAfile ../" + results.cgsea + " -prefix " + name + " -outputFileName GSEA_" + name
-        print(cmd)
-        os.system(cmd)
-    os.chdir("..")
-        
-# =============================================================================
 # Creating score plots
 # =============================================================================
 
-command = "python " + os.path.join(scriptdir, "coordinates.py") + " -nExp " + str(numExp) + " " # coordinates averaging
-for a in names:
-    command += "-exp " + a + " "
-command += "-nGroups " + str(len(groups_excl)) + " "
-for x in groups_excl: # should be groups_excl
-    command += "-groups " + x + " "
-for x in chrlist:
-    command += "-chr " + x + " "
-print("\n" + command + "\n")
-os.system(command)
+if results.filter is None and results.removal is not None:
+    command = "python " + os.path.join(scriptdir, "coordinates.py") + " -nExp " + str(numExp) + " " # coordinates averaging
+    for a in names:
+        command += "-exp " + a + " "
+    command += "-nGroups " + str(len(groups_excl)) + " "
+    for x in groups_excl: # should be groups_excl
+        command += "-groups " + x + " "
+    for x in chrlist:
+        command += "-chr " + x + " "
+    print("\n" + command + "\n")
+    os.system(command)
+    
 
-# =============================================================================
-# PC-Info Document
-# =============================================================================
 
-with open("chr_info.txt", "w") as info:
-    for chrNum in chrlist:
-        os.chdir("chr_" + chrNum)
-        pcNum = 0
-        with open("lengthdoc.txt", "r") as lengthdoc:
-            a = lengthdoc.readline()
-            b = lengthdoc.readline()
-            pcNum = lengthdoc.readline()
-        info.write("Chromosome " + str(chrNum) + ": PC " + str(pcNum)+"\n")
-        os.chdir("..")
