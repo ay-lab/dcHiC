@@ -29,6 +29,14 @@ parser.add_argument("-res", action = 'store', dest = 'res', help = "Resolution")
 
 parser.add_argument("-multiComp", action = 'store', dest = 'mcomp', help = "Include this field (-multiComp 1) if you want a combined comparison. DEBUG feature. Set true by default.")
 
+parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
+
+parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
+
+parser.add_argument("-repParams", action = 'store', dest = 'reps', help = "Replicate parameter file (PC variation) to use, if no replicates provided.")
+
+parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Blacklist, if used.")
+
 #parser.add_argument("-keepIntermediates", action = 'store', dest = "keepIntermediates", help = "DEBUG FEATURE: Activate to output replicate fitting info while processing")
 
 results = parser.parse_args()
@@ -38,6 +46,7 @@ scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
 pc_coords = []
 bins = []
+
 
 names = []
 groups = [] # layer 1 of organization 
@@ -52,7 +61,7 @@ isGrouping = False
 startdir = os.getcwd()
 
 tempchrlist = []
-with open(results.chrs, "r") as input:
+with open(results.chr, "r") as input:
     for line in input:
         a = line.strip()
         tempchrlist.append(a)
@@ -61,7 +70,35 @@ chrlist = [] # Remove Duplicates, if any
 for chrelem in tempchrlist:
     if chrelem not in chrlist:
         chrlist.append(chrelem)
-print(chrlist)
+
+filteredchrs = {}
+possiblechrs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"] 
+# this allows for all human/mice to be run
+for elem in possiblechrs:
+    chrTag = elem
+    filteredchrs[chrTag] = []
+    
+if results.filter is not None:
+    numlines = 0
+    with open(results.filter, "r") as filterfile:
+        exps_list = filterfile.readline().strip().split()
+        for line in filterfile:
+            l = line.strip().split()
+            chrTag = l[0][l[0].index("chr")+3:]
+            badExps = []
+            for a in range(1, len(l)):
+                if float(l[a]) > 1:
+                    badExps.append(exps_list[a-1])
+            if chrTag in filteredchrs:     
+                for a in badExps:
+                    filteredchrs[chrTag].append(a)
+
+if results.removal is not None:
+    with open(results.removal, "r") as removefile:
+        for line in removefile:
+            l = line.strip().split()
+            if l[0] not in filteredchrs[l[1]]:
+                filteredchrs[l[1]].append(l[0])
 
 if isGrouping == False:
     if (len(names) != len(groups)):
@@ -69,6 +106,30 @@ if isGrouping == False:
 else:
     if (len(names) != len(groups)) or (len(groups) != len(groupings)):
         print("Erroneous input file. Length of names, groups, and groupings don't match.")
+
+def needsSeparateDiffCmp():
+    global chrlist
+    totalchrs = len(chrlist)
+    affected = 0
+    for c in chrlist:
+        if len(filteredchrs[c]) > 0:
+            affected += 1
+    if float(affected/totalchrs) > 0.2:
+        return True
+    else:
+        return False
+
+def getUnaffectedChrs():
+    global chrlist
+    goodlist = []
+    badlist = []
+    for c in chrlist:
+        if len(filteredchrs[c]) == 0:
+            goodlist.append(c)
+        else:
+            badlist.append(c)
+    re = [goodlist, badlist]
+    return re
         
 def setDestinations(Chr):
     global destinations
@@ -76,24 +137,56 @@ def setDestinations(Chr):
     currdir = os.getcwd()
     chrTag = "chr_" + Chr
     pcFiles = os.path.join(currdir, chrTag, "pcFiles")
-    pc_decision_file = os.path.join(currdir, chrTag, "pc_decision.txt")
-    with open(pc_decision_file, "r") as pc_file:
-        pc_decision = int(pc_file.readline().strip())
-    if pc_decision == 1:
-        for a in range(len(names)):
-            filename = "pc1_" + str(names[a]) + "_exp_" + str(a+1) + ".txt"
-            destinations.append(os.path.join(pcFiles, filename))
-    if pc_decision == 2:
-        for a in range(len(names)):
-            filename = "pc2_" + str(names[a]) + "_exp_" + str(a+1) + ".txt"
-            destinations.append(os.path.join(pcFiles, filename))
+    for a in range(len(names)):
+        filename = "pc_" + str(names[a]) + "_exp_" + str(a+1) + ".txt"
+        destinations.append(os.path.join(pcFiles, filename))
+    
+    # pc_decision_file = os.path.join(currdir, chrTag, "pc_decision.txt")
+    # with open(pc_decision_file, "r") as pc_file:
+    #     pc_decision = int(pc_file.readline().strip())
+    # if pc_decision == 1:
+    #     for a in range(len(names)):
+    #         filename = "pc1_" + str(names[a]) + "_exp_" + str(a+1) + ".txt"
+    #         destinations.append(os.path.join(pcFiles, filename))
+    # if pc_decision == 2:
+    #     for a in range(len(names)):
+    #         filename = "pc2_" + str(names[a]) + "_exp_" + str(a+1) + ".txt"
+    #         destinations.append(os.path.join(pcFiles, filename))
 
-def checkInputs():
+def checkInputs(chrTag):
+    global names
+    global groups
+    global groups_excl
+    global group_sizes
+    global destinations
+    global groupings
+    global groupings_excl
+    global groupings_sizes
     global isGrouping
+    global startdir
+    global currGroups
+    global filteredChrs
+    
+    names = []
+    groups = [] # layer 1 of organization 
+    groups_excl = []
+    group_sizes = []
+    destinations = []
+    
+    groupings = [] # groupings of groups
+    groupings_excl = []
+    groupings_sizes = []
+    isGrouping = False
+    startdir = os.getcwd()
+    currGroups = []
+    
     with open(results.inputfile, 'r') as input:
         for line in input:
             line = line.strip()
             temp = line.split()
+            if results.filter is not None and chrTag != 0:
+                if temp[0] in filteredchrs[chrTag]:
+                    continue
             names.append(temp[0])
             groups.append(temp[1])
             if temp[1] not in groups_excl:
@@ -167,6 +260,8 @@ def createModel(r1data, r2data, chrNum, makeImages):
     if makeImages: 
         plt.plot(x, y, 'ro', markersize = 1)
         plt.plot(x, model.predict(x))
+        plt.xlabel("Replicate PC Values")
+        plt.ylabel("Replicate PC Values")
         #plt.show()
         filename = "Chr" + str(chrNum) + "_replicates.png"
         plt.savefig(filename, bbox_inches='tight', dpi = 600)
@@ -184,9 +279,28 @@ def makeDirectory():
     if os.path.isdir("ReplicateImages") == False:
         os.mkdir("ReplicateImages")
 
-def getRepParams(): 
+def getRepParams(chrNum): 
+    global chrlist
+    global names
+    global groups
+    global groups_excl
+    global group_sizes
+    global destinations
+    global groupings
+    global groupings_excl
+    global groupings_sizes
+    global isGrouping
+    global startdir
+    global currGroups
+    global filteredChrs
+    
     if results.makePlots is not None:
         makeDirectory()
+    if isinstance(chrNum, list):
+        chrlist = chrNum
+    elif chrNum != 0: # remove / filter option in place
+        chrlist = [chrNum]
+        
     with open("chrdistances.txt", "w") as eucDistanceFile:
         eucDistanceFile.write("m\ts\tchr\n")
         for Chr in chrlist:
@@ -213,10 +327,6 @@ def getRepParams():
                 pngName = chrTag + "_replicates.png"
                 shutil.move(pngName, "ReplicateImages")
             else:
-                #print(len(r1data))
-                #print(r1data[:10])
-                #print(len(r2data))
-                #print(r2data[:10])
                 vals = createModel(r1data, r2data, str(Chr), False)
             for inc in range(len(r1data)):
                 dist = (pointLineDist(r1data[inc], r2data[inc], vals[0], vals[1]))
@@ -228,26 +338,116 @@ def getRepParams():
     
 
 def main():
-    checkInputs()
-    getRepParams()
-    makeSampleFile()
-    for Chr in chrlist:
-        chrtag = "chr_" + Chr
-        cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -chr " + Chr + " -combined 1"
+    if results.reps is not None:
+        distfile = results.reps
+    else:
+        distfile = "chrdistances.txt"
+    if results.filter is None and results.removal is None: # run all combined
+        checkInputs(0)
+        if results.reps is None:
+            getRepParams(0)
+        makeSampleFile()
+        for Chr in chrlist:
+            chrtag = "chr_" + Chr
+            cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -chr " + Chr + " -combined 1 -res " + results.res
+            if results.blacklist is not None:
+                cmd = cmd + " -blacklist " + results.blacklist
+            print(cmd)
+            os.system(cmd)
+            
+        cmd = "Rscript " + os.path.join(scriptdir, "diffcmp_pythonV.r")
+        for Chr in chrlist:
+            chrtag = "chr_" + Chr
+            cmd = cmd + " " + chrtag + "/" + "chr" + Chr + ".PC.coordinates.txt"
+        if results.mcomp is not None:
+            cmd = cmd + " 2 "
+        else:
+            cmd = cmd + " 1 "
+        cmd = cmd + " " + results.chr + " " + str(results.res) + " " + distfile + " samplefile.txt " + scriptdir
         print(cmd)
         os.system(cmd)
     
-    cmd = "Rscript " + os.path.join(scriptdir, "diffcmp_pythonV.r") 
-    for Chr in chrlist:
-        chrtag = "chr_" + Chr 
-        cmd = cmd + " " + chrtag + "/" + "chr" + Chr + ".PC.coordinates.txt"
-    if results.mcomp is not None:
-        cmd = cmd + " 2 "
     else:
-        cmd = cmd + " 1 " 
-    cmd = cmd + " " + results.chr + " " + str(results.res) + " chrdistances.txt samplefile.txt " + scriptdir
-    print(cmd)
-    os.system(cmd)  
+        if needsSeparateDiffCmp(): # separate DiffCmp per chromosome
+            print("NOTE: Because more than 1/5 of chromosomes supplied have a removal, a separate DiffCmp will be run for each one.")
+            for Chr in chrlist:
+                checkInputs(Chr)
+                if results.reps is None:
+                    getRepParams(Chr)
+                makeSampleFile()
+                chrtag = "chr_" + Chr
+                cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -chr " + Chr + " -combined 1 -res " + results.res
+                if results.blacklist is not None:
+                    cmd = cmd + " -blacklist " + results.blacklist
+                print(cmd)
+                os.system(cmd)
+                
+                #os.mkdir("chr" + Chr + "_diffcomp")
+                cmd = "Rscript " + os.path.join(scriptdir, "diffcmp_pythonV.r") 
+                cmd = cmd + " " + chrtag + "/" + "chr" + Chr + ".PC.coordinates.txt"
+                if results.mcomp is not None:
+                    cmd = cmd + " 2 "
+                else:
+                    cmd = cmd + " 1 " 
+                cmd = cmd + " " + Chr + " " + str(results.res) + " " + distfile + " samplefile.txt " + scriptdir
+                print(cmd)
+                os.system(cmd)  
+        else: # will run one large DiffCmp with non-affected and separate chrwise DiffCmp's for chromosomes with removed cell lines
+            relist = getUnaffectedChrs()
+            goodlist = relist[0]
+            checkInputs(0)
+            if results.reps is None:
+                getRepParams(goodlist)
+            makeSampleFile()
+            for Chr in goodlist:
+                chrtag = "chr_" + Chr
+                cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -chr " + Chr + " -combined 1 -res " + results.res
+                if results.blacklist is not None:
+                    cmd = cmd + " -blacklist " + results.blacklist
+                print(cmd)
+                os.system(cmd)
+            
+            cmd = "Rscript " + os.path.join(scriptdir, "diffcmp_pythonV.r")
+            for Chr in goodlist:
+                chrtag = "chr_" + Chr
+                cmd = cmd + " " + chrtag + "/" + "chr" + Chr + ".PC.coordinates.txt"
+            if results.mcomp is not None:
+                cmd = cmd + " 2 "
+            else:
+                cmd = cmd + " 1 "
+            toprint = "DIFF. COMPT. CALLING RUN ON ALL FULL CHROMOSOMES: "
+            with open("chr_unaffected.txt", "w") as ucfile:
+                for g in goodlist:
+                    ucfile.write(g + "\n")
+                    toprint = toprint + g + " "
+            print(toprint)
+            cmd = cmd + " chr_unaffected.txt " + str(results.res) + " " + distfile + " samplefile.txt " + scriptdir
+            print(cmd)
+            os.system(cmd)
+            
+            badlist = relist[1]
+            for Chr in badlist:
+                checkInputs(Chr)
+                if results.reps is None:
+                    getRepParams(Chr)
+                makeSampleFile()
+                chrtag = "chr_" + Chr
+                cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -chr " + Chr + " -combined 1 -res " + results.res
+                if results.blacklist is not None:
+                    cmd = cmd + " -blacklist " + results.blacklist
+                print(cmd)
+                os.system(cmd)
+                cmd = "Rscript " + os.path.join(scriptdir, "diffcmp_pythonV.r") 
+                cmd = cmd + " " + chrtag + "/" + "chr" + Chr + ".PC.coordinates.txt"
+                if results.mcomp is not None:
+                    cmd = cmd + " 2 "
+                else:
+                    cmd = cmd + " 1 " 
+                cmd = cmd + " " + Chr + " " + str(results.res) + " " + distfile + " samplefile.txt " + scriptdir
+                print(cmd)
+                os.system(cmd)  
+            
 
 if __name__ == '__main__':
     main()
+                   
