@@ -37,12 +37,16 @@ parser.add_argument("-repParams", action = 'store', dest = 'reps', help = "Repli
 
 parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Blacklist, if used.")
 
+parser.add_argument("-genome", action = 'store', dest = 'genome', help = "Genome: hg38/19, mm10/9")
 #parser.add_argument("-keepIntermediates", action = 'store', dest = "keepIntermediates", help = "DEBUG FEATURE: Activate to output replicate fitting info while processing")
 
 results = parser.parse_args()
 
 startdir = os.getcwd()
 scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
+
+if results.blacklist is not None:
+    results.blacklist = os.path.abspath(results.blacklist)
 
 pc_coords = []
 bins = []
@@ -72,8 +76,16 @@ for chrelem in tempchrlist:
         chrlist.append(chrelem)
 
 filteredchrs = {}
-possiblechrs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"] 
-# this allows for all human/mice to be run
+humanchrs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"] 
+micechrs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "X", "Y"]
+possiblechrs = []
+if results.genome.lower() == "mm10" or results.genome.lower() == "mm9":
+    possiblechrs = micechrs
+elif results.genome.lower() == "hg38" or results.genome.lower() == "hg19":
+    possiblechrs = humanchrs
+else:
+    print("WARNING/ERROR: Not using mice or human dataset.")
+    
 for elem in possiblechrs:
     chrTag = elem
     filteredchrs[chrTag] = []
@@ -451,3 +463,5 @@ def main():
 if __name__ == '__main__':
     main()
                    
+                        
+            
