@@ -135,6 +135,8 @@ python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -geno
 
 ## Special Specifications
 
+The blacklists are taken from a comprehensive study of problematic regions in the genome, dubbed the ENCODE blacklists. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>.
+
 Differential calling uses a large amalgmation of p-values across chromosomes to increase power. If more than 1/5 of chromosomes (specified in -chrFile) have some type of removal, either from SV filtering or manual removal, differential calling will instead be done on a chromosome-by-chromosome level. If there are only _some_ removals (in up to 1/5 of chromosomes), differential calling will be done chromosome-wise for those affected and together for the rest. 
 
 The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples (with no SV's detected via SVscore). The mice replicate parameter files were created using high-quality neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>) with no SV's.  
