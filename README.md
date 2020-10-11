@@ -159,14 +159,6 @@ Rscript /path/to/igvtrack.R [genome] [visualization file]
 Rscript /path/to/igvtrack.R  mm10 viz.txt # an example
 ```
 
-## Run dcHiC In Modular Fashion
-
-Some run cases require a modular setup. For instance, if you want to run a large number (several dozens or more) of samples, it will be time-inefficient to run these in sequence with dchic.py and memory-intensive to run these in parallel. For these cases, dcHiC can be run in a modular fashion (by chromosome), a feature useful in environments like computing clusters where one simply needs to submit a job per chromosome. 
-
-To run it for one particular chromosome XX, create a directory for that chromosome named "chr_XX" and use runhmfa.py (many of the same arguments as above). Rather than specifying the directory of input files in the last column, now specify the O/E correlation matrix file itself for that chromosome ("chrXX.matrix", for instance). 
-
-After running several chromosomes separately, you can then go to the global directory that encompasses those directories and run differentialCalling.py (logical arguments) and/or igvtrack.R. 
-
 ## Output
 
 In the directory where you have run the data, you should have the following:
