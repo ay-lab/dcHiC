@@ -30,7 +30,7 @@ res = int(results.res)
 chrs = []
 sizes = []
 chrSizes = {}
-with open(results.genomeSize, "r") as chrinput:
+with open(results.genomeSize, "r") as chrinput: # May need to change this to "rb" option if getting error 
     for line in chrinput:
         chrTag = line.strip().split()[0]
         chrSize = int(line.strip().split()[1])
@@ -39,8 +39,12 @@ with open(results.genomeSize, "r") as chrinput:
         sizes.append(chrSize)
 
 matrixArr = []
+filename, file_extension = os.path.splitext(results.file)
 
 if results.mode == "1": #.hic file data dump
+    if file_extension != ".txt":
+        print("Wrong file type used. Must be .txt pre-processed Pearsons matrix from Juicer.")
+        sys.exit()
     
     chromosome = results.prefix
     if chromosome == "x" or chromosome == "y":
@@ -76,34 +80,48 @@ if results.mode == "1": #.hic file data dump
     newName = "chr" + str(results.prefix) + ".matrix"
     iterator = 0
     outline = ""
+    
+    # This mode gets rid of NaN positions
+    
     while iterator < len(matrixArr):
-     #   if iterator in badPositions:
-     #       continue
-     #       iterator+=1
+        if iterator in badPositions:
+            iterator+=1
+            continue
         outline += "\t" + chrTag + "-" + str(res*iterator)
         iterator+=1
-        
-    with open(newName, "w") as outfile:
+    
+    with open(newName, "w") as outfile: 
         outfile.write(outline + "\n")
         for a in range(len(matrixArr)):
             if a in badPositions:
-                outline = chrTag + "-" + str(res*a)
-                for b in range(lineLength):
-                    outline += "\t0"
-                outfile.write(outline + "\n")
+                continue
             else:
                 outline = chrTag + "-" + str(res*a)
                 line = matrixArr[a]
                 for b in range(len(line)):
                     if b in badPositions:
-                        outline += "\t0"
+                        continue
                     else: 
                         outline += "\t" + str(line[b])
-                outfile.write(outline + "\n")     
-        
+                outfile.write(outline + "\n")   
     print("Matrix creation done.")
     
 elif results.mode == "2": #.cool data dump option
+    
+    print("Creating sparse matrix............")
+    outname = results.prefix + "_" + results.res + ".matrix"
+    extension = os.path.splitext(results.file)[1]
+    filename = ""
+    if extension == ".mcool":
+        filename = results.file + "::/resolutions/" + results.res 
+    elif extension == ".cool":
+        filename = results.file
+    else:
+        print("Extension is neither .cool or .mcool. Please make sure it is one of these two.")
+    
+    cmd = "cooler dump -o " + outname + " " + filename 
+    os.system(cmd)
+    
     name = results.prefix + "_" + str(results.res) + "_abs.bed" #data_200000_abs.bed
     iterator = 0
         
@@ -119,20 +137,6 @@ elif results.mode == "2": #.cool data dump option
             if (posIterator-res) < length:
                 bedfile.write(chrs[a] + "\t" + (str(posIterator-res)) + "\t" + str(length) + "\t" + str(iterator) + "\n")
                 iterator +=1
-    
-    print("Creating sparse matrix............")
-    outname = results.prefix + "_" + results.res + ".matrix"
-    extension = os.path.splitext(results.file)[1]
-    filename = ""
-    if extension == ".mcool":
-        filename = results.file + "::/resolutions/" + results.res 
-    elif extension == ".cool":
-        filename = results.file
-    else:
-        print("Extension is neither .cool or .mcool. Please make sure it is one of these two.")
-    
-    cmd = "cooler dump -o " + outname + " " + filename 
-    os.system(cmd)
     
 else:
     print("Specify a mode.")
