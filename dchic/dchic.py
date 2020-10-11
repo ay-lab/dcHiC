@@ -30,10 +30,6 @@ parser.add_argument("-alignData", action = 'store', dest = 'goldenpath', help = 
 
 parser.add_argument('-genome', action = 'store', dest = 'genome', help = "Used to determine eigenvector sign. Options: hg38, hg19, mm10, mm9 [If not provided, analysis will skip this step]")
 
-#parser.add_argument('-signAnalysis', action = 'store', dest = 'analysis', help = "Used to determine which data will be used for determining eigenvector sign. Options: \"tss\", \"gc\". [If not provided, analysis will skip this step.]")
-
-#parser.add_argument('-cGSEA', action = 'store', dest = 'cgsea', help = "Set if you want GSEA performed. File with basic cGSEA specifications as specified in documentation... Do not include field if cGSEA not wanted.")
-
 parser.add_argument("-keepIntermediates", action = 'store', dest = 'intermediates', help = "Variable, if set, will keep intermediate files: graphing, R session, tracks, etc.")
 
 parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Path to bed file with blacklisted regions not to include. Do not include if not wanted.")
@@ -46,8 +42,6 @@ parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "M
 
 parser.add_argument("-repParams", action = 'store', dest = 'repParams', help = "Replicate parameter file (PC variation) to use, if no replicates provided.")
 
-#parser.add_argument("-armwise", action = 'store', dest = 'arm', help = "Set to true if you have processed matrices armwise.")
-
 results = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : - %(pathname)s - %(levelname)-8s : %(processName)s : %(message)s')
@@ -55,7 +49,12 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : - %(pathname)s - 
 startdir = os.getcwd()
 scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
 svthreshold = 1
-results.goldenpath = os.path.abspath(results.goldenpath)
+if results.goldenpath is not None:
+    results.goldenpath = os.path.abspath(results.goldenpath)
+if results.blacklist is not None:
+    results.blacklist = os.path.abspath(results.blacklist)
+if results.repParams is not None:
+    results.repParams = os.path.abspath(results.repParams)
 
 # =============================================================================
 # System Checks
@@ -108,7 +107,17 @@ numGroups = 0
 numExp = 0
 
 filteredchrs = {}
-for elem in chrlist:
+humanchrs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"] 
+micechrs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "X", "Y"]
+possiblechrs = []
+if results.genome.lower() == "mm10" or results.genome.lower() == "mm9":
+    possiblechrs = micechrs
+elif results.genome.lower() == "hg38" or results.genome.lower() == "hg19":
+    possiblechrs = humanchrs
+else:
+    print("WARNING/ERROR: Not using mice or human dataset.")
+    
+for elem in possiblechrs:
     chrTag = elem
     filteredchrs[chrTag] = []
     
@@ -126,8 +135,6 @@ if results.filter is not None:
             if chrTag in filteredchrs:     
                 for a in badExps:
                     filteredchrs[chrTag].append(a)
-            else:
-                print("Chromosome mismatch in -chrFile input and SVfilter text file.")
 
 if results.removal is not None:
     with open(results.removal, "r") as removefile:
@@ -214,10 +221,6 @@ def chr_process(chrNum):
         os.mkdir(newdir)
     os.chdir(newdir)
     chrTag = chrNum    
-    #if "p" in chrNum:
-    #    chrTag = chrNum[:chrNum.index("p")]
-    #if "q" in chrNum:
-    #    chrTag = chrNum[:chrNum.index("q")]
     cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrTag + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
     if results.ncp is not None and isinstance(results.ncp, int):
         cmd = cmd + " -ncp " + results.ncp
@@ -316,11 +319,6 @@ if results.par is None:
         print(numGroups)
         
         chrTag = chrNum
-        #if "p" in chrNum:
-        #    chrTag = chrNum[:chrNum.index("p")]
-        #if "q" in chrNum:
-        #    chrTag = chrNum[:chrNum.index("q")]
-            
         cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrTag + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
         if results.ncp is not None and isinstance(results.ncp, int):
             cmd = cmd + " -ncp " + results.ncp
@@ -495,7 +493,7 @@ with open("chr_info.txt", "w") as info:
 # # Differential Calling
 # # =============================================================================
 
-cmd = "python " + os.path.join(scriptdir, "differentialCalling.py") + " -inputFile " + results.input + " -chrFile " + results.chrs + " -makePlots 1 -res " + str(results.res)
+cmd = "python " + os.path.join(scriptdir, "differentialCalling.py") + " -inputFile " + results.input + " -chrFile " + results.chrs + " -makePlots 1 -res " + str(results.res) + " -genome " + results.genome 
 if isGrouping:
     if len(groupings_excl) > 2:
         cmd = cmd + " -multiComp 1"
@@ -529,5 +527,4 @@ if results.filter is None and results.removal is not None:
     print("\n" + command + "\n")
     os.system(command)
     
-
 
