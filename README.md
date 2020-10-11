@@ -1,6 +1,6 @@
 # dcHiC: Differential Compartment Analysis of Hi-C Datasets [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Hierarchal Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization (using IGV.js) and Gene Set Enrichment Analysis on significant compartment changes. It is one of few tools that normalizes technical biases in Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
+dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Hierarchal Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization (using IGV.js) and several other useful analysis options. It is one of few tools that normalizes technical biases in Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
 
 For more information, see our presentation (Regulatory & Systems Genomics COSI) & poster at ISMB 2020. This tool was produced by Jeffrey Wang, Abhijit Chakraborty, and Ferhat Ay at the La Jolla Institute for Immunology. 
 
@@ -68,9 +68,9 @@ Based on the groupings specified by the user in the input file (see below), dcHi
 
 Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. <a href = "https://dchic-viz.imfast.io/">See examples at this link</a>. For more information on how to run, see the input section below. 
 
-### Compartmental Gene Set Analysis (cGSEA) 
+### Filtering Structural Variations 
 
-To analyze the biological significance of differential compartments, dcHiC implements a pre-ranked GSEA (ranked by the -log10 of the p-values, m-distance, or dZsc). The gene set file should be specified by the user. This is usable but in development form. 
+Large scale structural variations, like translocations and chromothripsis, create nonsense compartment calls. We introduce a measure "SVscore" to quantify this, and employ a filter as an option in dcHiC to address it. See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Filtering-Chromosomes-With-Large-Structural-Variations">wiki page</a> for more.
 
 ## Input File(s) Specifications
 
@@ -98,16 +98,9 @@ Create a file called input.txt for dcHiC with the format below. The replicate, n
 replicate   name    (grouping)   directory
 ```
 
-#### Important Note: We are aware it isn't ideal, but be sure names do not include underscores or hyphens (due to naming conventions in-program). Working on an update to resolve this issue. 
+#### Important Note: Be sure names do not include underscores or hyphens. 
 
 The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
-
-### Compartmental Gene Set Enrichment Analysis (cGSEA) Input File
-
-cGSEA is an optional part of the pipeline that performs GSEA on a pre-ranked list of genes in significant differential compartments. To perform cGSEA, first ensure you have Java 11+. The input for cGSEA is a file
-- The first line specifies how the data should be ranked: 1 is the -log(10) of the p-adjusted value, 2 is dZsc, and 3 is mahalanobis distance. In almost all cases, it should be 1 but <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> provides specifics. 
-- The second line is the path to a gene set GMT file. See the tutorial for an example. 
-- The third line is the path to a gene position bed for the genome used. See <a href = "https://www.dropbox.com/sh/b8arrl7tzl1nzc3/AABV-1kSy93dB32peZ0ocfd4a?dl=0"> here </a> for examples.
 
 ## Program Arguments
 
@@ -121,22 +114,30 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-input**                | Assign 1 (if using HOMER input) and 2 (for all else): Used to scan file names in input directories. 
 | **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
-| **-signAnalysis**             | Specify which biological data will be used to determine eigenvector sign with ("gc" or "tss"). 
-| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. 
-| **-cGSEA**             | Optional: If you wish to perform a ranked GSEA on signficant compartment changes, enter the input file as specified above.  
-| **-keepIntermediates**             | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
+| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. If not included, dcHiC automatically downloads the necessary files. 
+| **-keepIntermediates**          | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
+| **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm9/mm10 blacklists. 
+| **-ncp**   | The number of PC's to calculate & choose the final result from. Default is 2. Specify if more wanted.
+| **-SVfilter** | Optional: If you wish to filter for structural variations, use the <a href = "https://github.com/ay-lab/dcHiC/wiki/Filtering-Chromosomes-With-Large-Structural-Variations">SVscore output</a> here. 
+| **-removeFile** | Optional: If you do not wish to use the SVfilter option but simply want to remove a few chromosomes from a few samples, use this. Enter a tab-delimited file with experiment names on the left column (matching -inputFile) and chromosome numbers ('X', '2') on the right. 
+| **-repParams** | Optional: If using data with no (or few) replicates, use a different set of replicate parameters instead. A set of high-quality parameters is available in the files for mice/human datasets. 
 
-For instance, the following command would run a human non-HOMER input, 6 chromosomes at a time, with cGSEA, at a resolution of 100kb: 
-
-```bash
-python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 6 -genome hg38 -signAnalysis gc -alignData /path/to/hg38_goldenPathData -cGSEA cgsea.txt -keepIntermediates 1
-```
-This command would run a mice HOMER input, in sequence, without cGSEA or retaining intermediates, at a resolution of 500kb: 
+For instance, the following command would run a human non-HOMER input, with a blacklist, 6 chromosomes at a time, at a resolution of 100kb: 
 
 ```bash
-python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -signAnalysis gc -alignData /path/to/mm10_goldenPathData
+python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 6 -genome hg38 -alignData /path/to/hg38_goldenPathData -keepIntermediates 1 -blacklist hg38blacklist_sorted.bed 
 ```
-dcHiC can be run from top to bottom or it can be run in a "modular" setting. See examples in the wiki (to be added).
+This command would run a mice HOMER input, in sequence, with a special replicate paramter file, without retaining intermediates, with a blacklist and SVfiltering, at a resolution of 500kb: 
+
+```bash
+python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams mice_params.txt -SVfilter mice.svscore.txt -blacklist mm10blacklist_sorted.bed 
+```
+
+## Special Specifications
+
+Differential calling uses a large amalgmation of p-values across chromosomes to increase power. If more than 1/5 of chromosomes (specified in -chrFile) have some type of removal, either from SV filtering or manual removal, differential calling will instead be done on a chromosome-by-chromosome level. If there are only _some_ removals (in up to 1/5 of chromosomes), differential calling will be done chromosome-wise for those affected and together for the rest. 
+
+The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples (with no SV's detected via SVscore). The mice replicate parameter files were created using high-quality neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>) with no SV's.  
 
 ## Visualization Input
 
@@ -162,7 +163,7 @@ Some run cases require a modular setup. For instance, if you want to run a large
 
 To run it for one particular chromosome XX, create a directory for that chromosome named "chr_XX" and use runhmfa.py (many of the same arguments as above). Rather than specifying the directory of input files in the last column, now specify the O/E correlation matrix file itself for that chromosome ("chrXX.matrix", for instance). 
 
-After running several chromosomes separately, you can then go to the global directory that encompasses those directories and run differentialCalling.py (logical arguments), cgsea.py, and/or igvtrack.R. 
+After running several chromosomes separately, you can then go to the global directory that encompasses those directories and run differentialCalling.py (logical arguments) and/or igvtrack.R. 
 
 ## Output
 
@@ -193,33 +194,18 @@ HMFA_chrXXX_exp_XX.bedGraph
     MultiComparison_full_compartment_details.bedGraph
     MultiComparison_differential_compartments_details.bedGraph
 ```
-    
-#### If cGSEA is to be performed
-- Compartment detail files with genes outlined:
-```
-    Genes.XXX_vs_XXX_full_compartment_details.bedGraph
-    ...
-    Genes.MultiComparison_full_compartment_details.bedGraph
-```
-- Ranked gene files for input to GSEA:
-```
-    XXXvsXXX_genes_ranked.rnk
-    MultiComparison_genes_ranked.rnk
-```
-- GSEA directories: Within each GSEA directory, there will be many results. View the index.html to explore results. See a guide to interpret results <a href = "https://www.gsea-msigdb.org/gsea/doc/GSEAUserGuideTEXT.htm"> here </a>. 
-```
-    GSEA_XXX_vs_XXX
-    ...
-    GSEA_MultiComparison
-```
   
 ### Other Information
 - **Coordinate PNG's**: PC1 vs PC2 plots for experiment groups/groupings. 
-- **PC Selection Info**: See which PC (1 or 2) was used for compartment analysis for each chromosome ("chr_info.txt")
+- **PC Selection Info**: See which PC (1 or 2) was used for compartment analysis for each chromosome ("chr_info.txt" and "PCselection.txt")
             
 ## Tutorial: Mice Neural Differentiation Data
 
 See <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">the tutorial page here</a>. 
+
+## Updates
+
+10/10: Substantial revisions made. Improved differential calling/PC selection, updated routines, SV-filtering, manual removal of chromosomes 
 
 ## Contact
 
