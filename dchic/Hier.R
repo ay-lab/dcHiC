@@ -1,14 +1,13 @@
 library(FactoMineR)
 args = commandArgs(trailingOnly=TRUE) 
 path = args[length(args)]
-source(file.path(path,"armcorrection.R"))
-source(file.path(path,"selectpc.R"))
+source(file.path(path,"pcselect.r"))
 
-dataPath <- args[length(args)-1]
-selectedGenome <- args[length(args)-2]
-selectedChr <- args[length(args)-3]
-selectedRes <- as.integer(args[length(args)-4])
-selectedMode <- args[length(args)-5]
+ncp_user <- as.numeric(args[length(args)-1])
+dataPath <- args[length(args)-2]
+selectedGenome <- args[length(args)-3]
+selectedChr <- args[length(args)-4]
+selectedRes <- as.integer(args[length(args)-5])
 size = as.numeric(args[length(args)-6])
 numElements = as.numeric(args[length(args) - 7])
 numGroups = as.numeric(args[length(args) - 8])
@@ -48,97 +47,38 @@ names[[1]] <- general_names
 names[[2]] <- group_names
 
 currentDir <- getwd()
-res.hmfa <- HMFA(comb_matrix, H = hierar, type = rep("c",length(hierar[[1]])), ncp = 2, name.group = names, graph=FALSE)
-pcNum <- selectpc(res.hmfa, selectedChr)
-sink("pc_decision.txt")
-cat(pcNum)
-sink()
-if (selectedMode != "None") {
-  if (dataPath == "None") {
-    res.hmfa <- armcorrection(obj=res.hmfa, genome=selectedGenome, pc=pcNum, chr=selectedChr, resolution=selectedRes, choice=selectedMode)
-  } else {
-    res.hmfa <- armcorrection(obj=res.hmfa, genome=selectedGenome, pc=pcNum, chr=selectedChr, resolution=selectedRes, choice=selectedMode, folder = normalizePath(dataPath))
-  }
+res.hmfa <- HMFA(comb_matrix, H = hierar, type = rep("c",length(hierar[[1]])), ncp = ncp_user, name.group = names, graph=FALSE)
+
+name <- paste("Rsession_HMFAObj_", selectedChr, ".rds", sep = "")
+saveRDS(res.hmfa, name)
+
+if (dataPath == "None") {
+  pc.res <- pcselect(obj=res.hmfa, chr=selectedChr, genome=selectedGenome, resolution=selectedRes)
+} else {
+  pc.res <- pcselect(obj=res.hmfa, chr=selectedChr, genome=selectedGenome, resolution=selectedRes, folder = normalizePath(dataPath))
 }
 
 print(currentDir)
 setwd(currentDir)
 
-saveRDS(res.hmfa, "Rsession.rds")
+name <- paste("Rsession_", selectedChr, ".rds", sep = "")
+saveRDS(res.hmfa, name)
 
 bins <- labels(res.hmfa[["partial"]][[1]])
 
-bigframe <- vector("list", numElements)
-pc2 <- vector("list", numElements)
-
-for (i in 1:(numElements*2)) {
-  if ((i+1)%%2 == 0) {
-    startpos = (i-1)*size+1
-    endpos = startpos+size-1 # change 2/16; never had prior effects b/c this is odd
-    vec <- c()
-    for (j in startpos:endpos) {
-      vec <- c(vec, res.hmfa[["partial"]][[1]][[j]])
-    }
-    bigframe[[(i+1)/2]] <- vec
-  }
-}
-
-
-# PC 2 Stuff
-for (i in 1:(numElements*2)) {
-  if ((i)%%2 == 0) {
-    startpos = (i-1)*size+1
-    endpos = startpos+size-1 #change 2-16
-    vec <- c()
-    #print(startpos)
-    #print(endpos)
-    for (j in startpos:endpos) {
-      vec <- c(vec, res.hmfa[["partial"]][[1]][[j]])
-    }
-    pc2[[i/2]] <- vec
-  }
-}
-
 for (i in 1:numElements) {
+  col <- c("\t\tDim.1")
   str_init <- paste("hmfa_chrRAW_", general_names[[i]], sep = "") #numChr is a legacy feature
   str_init1 <- paste(str_init, "_exp_", sep = "")
   str_res <- paste(str_init1, i, sep = "")
   str_res2 <- paste(str_res, ".txt", sep= "")
   exp_name <- paste("exp", i, sep = "")
-  
-
-  file.create(str_res2)
-  fileConn<-file(str_res2)
-  vec <- c()
-  vec <- c(vec, paste("\t", "\t", "Dim.1"))
-  for (j in 1:size) {
-    vec <- c(vec, paste(bins[[1]][[j]], "\t", bigframe[[i]][[j]]))
-    writeLines(vec, fileConn)
-  }
-  close(fileConn)
-}
-
-for (i in 1:numElements) {
-  str_init <- paste("pc2_chrRAW_", general_names[[i]], sep = "") #numChr is a legacy feature
-  str_init1 <- paste(str_init, "_exp_", sep = "")
-  str_res <- paste(str_init1, i, sep = "")
-  str_res2 <- paste(str_res, ".txt", sep= "")
-  exp_name <- paste("exp", i, sep = "")
-  
-  file.create(str_res2)
-  fileConn<-file(str_res2)
-  vec <- c()
-  vec <- c(vec, paste("\t", "\t", "Dim.2"))
-  for (j in 1:size) {
-    vec <- c(vec, paste(bins[[1]][[j]], "\t", pc2[[i]][[j]]))
-    writeLines(vec, fileConn)
-  }
-  close(fileConn)
+  PCvals <- as.data.frame(pc.res[[i]]$pc, row.names = bins[[1]])
+  write.table(PCvals, file = str_res2, row.names = T, quote = F, col.names = col)
 }
 
 sink("coordinates.txt")
-for (i in 1:2) { #this is assuming you only ever have two levels
+for (i in 1:2) { # this is assuming you only ever have two levels
   print(res.hmfa[["group"]][["coord"]][[i]])
 }
 sink()
-
