@@ -2,8 +2,6 @@
 
 dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization (using IGV.js) and several other useful analysis options. It is one of few tools that normalizes technical biases in Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
 
-For more information, see our presentation (Regulatory & Systems Genomics COSI) & poster at ISMB 2020. This tool was produced by Jeffrey Wang, Abhijit Chakraborty, and Ferhat Ay at the La Jolla Institute for Immunology. 
-
 ## Installation
 
 ### Option 1: Conda (Highly Recommended)
