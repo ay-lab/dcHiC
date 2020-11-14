@@ -179,7 +179,7 @@ def getGroups(chrTag):
             line = line.strip()
             temp = line.split()
             if results.filter is not None:
-                if temp[0] in filteredchrs[chrTag]:
+                if temp[1] in filteredchrs[chrTag]: # could be temp[1]
                     continue
             names.append(temp[0])
             groups.append(temp[1])
@@ -222,8 +222,8 @@ def chr_process(chrNum):
     os.chdir(newdir)
     chrTag = chrNum    
     cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrTag + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
-    if results.ncp is not None and isinstance(results.ncp, int):
-        cmd = cmd + " -ncp " + results.ncp
+    if results.ncp is not None:
+        cmd = cmd + " -ncp " + str(results.ncp)
     else:
         cmd = cmd + " -ncp 2"
     for a in group_sizes:
@@ -319,9 +319,10 @@ if results.par is None:
         print(numGroups)
         
         chrTag = chrNum
+            
         cmd = "python " + os.path.join(scriptdir, "run.py") + " -nExp " + str(numExp) + " -chrNum " + chrTag + " -res " + results.res + " -numGroups " + str(numGroups) + " -grouping 1"
-        if results.ncp is not None and isinstance(results.ncp, int):
-            cmd = cmd + " -ncp " + results.ncp
+        if results.ncp is not None:
+            cmd = cmd + " -ncp " + str(results.ncp)
         else:
             cmd = cmd + " -ncp 2"
         for a in group_sizes:
@@ -431,11 +432,6 @@ else:
 for chrNum in chrlist:
     print(os.getcwd())
     os.chdir("chr_" + chrNum)
-    # for file in glob.glob("HMFA*"): # this goes one at a time
-    #     exp_num = file.split("_")[3].split(".")[0]
-    #     newname = file.split("_")[0] + "_chr" + chrNum + "_" + groups_excl[int(exp_num)-1] + ".bedGraph"
-    #     command = "mv " + file + " " + newname
-    #     os.system(command)
     if results.intermediates is None:
         for file in glob.glob("compartmentSwitch_*"):
             os.remove(file)
@@ -526,5 +522,3 @@ if results.filter is None and results.removal is not None:
         command += "-chr " + x + " "
     print("\n" + command + "\n")
     os.system(command)
-    
-
