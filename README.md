@@ -46,9 +46,8 @@ Other Dependencies:
 - R Hashmap
 - IHW (Bioconductor)
 - bedtools
-- Java 11+ (if you wish to perform gene set enrichment analysis)
+- R R.utils
 - cooler (only if pre-processing _.cool_ files)
-- R R.utils (if visualizing)
 
 ## About dcHiC
 
@@ -56,11 +55,11 @@ Other Dependencies:
 
 ### Multiple Factor Analysis 
 
-Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. dcHiC uses MFA for comparison of any number of groups (in a two-tiered hierarchy) and datasets. 
+Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. dcHiC uses MFA for an unbiased comparison of any number of groups and datasets. 
 
 ### Differential Calling
 
-Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between Hi-C datasets in pairwise and group settings. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups. It outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
+Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between Hi-C datasets in pairwise and group settings. Using a combination of multivariate distance scores, it outputs biologically relevant differential compartments. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups. It outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
 
 ### Visualization
 
@@ -125,7 +124,7 @@ For instance, the following command would run a human non-HOMER input, with a bl
 ```bash
 python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 6 -genome hg38 -alignData /path/to/hg38_goldenPathData -keepIntermediates 1 -blacklist hg38blacklist_sorted.bed 
 ```
-This command would run a mice HOMER input, in sequence, with a special replicate paramter file, without retaining intermediates, with a blacklist and SVfiltering, at a resolution of 500kb: 
+This command would run a mice HOMER input, with chromosomes in sequence, with a special replicate paramter file, without retaining intermediates, with a blacklist and SVfiltering, at a resolution of 500kb: 
 
 ```bash
 python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams mice_params.txt -SVfilter mice.svscore.txt -blacklist mm10blacklist_sorted.bed 
@@ -137,7 +136,7 @@ The blacklists are taken from a comprehensive study of problematic regions in th
 
 Differential calling uses a large amalgmation of p-values across chromosomes to increase power. If more than 1/5 of chromosomes (specified in -chrFile) have some type of removal, either from SV filtering or manual removal, differential calling will instead be done on a chromosome-by-chromosome level. If there are only _some_ removals (in up to 1/5 of chromosomes), differential calling will be done chromosome-wise for those affected and together for the rest. 
 
-The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples (with no SV's detected via SVscore). The mice replicate parameter files were created using high-quality neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>) with no SV's.  
+The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples (with no SV's detected via SVscore). The mice replicate parameter files were created using gold standard mice neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>) with no SV's.  
 
 ## Visualization Input
 
@@ -197,7 +196,9 @@ See <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-
 
 ## Updates
 
-10/10: Substantial revisions made. Improved differential calling/PC selection, updated routines, SV-filtering, manual removal of chromosomes 
+11/14: Bug fixes and slight routine tweaks. Updated blacklists. 
+
+10/10: Substantial revisions made. Improved differential calling/PC selection, updated routines, SV-filtering, manual removal of chromosomes options. 
 
 ## Contact
 
@@ -207,4 +208,4 @@ Jeffrey Wang (jeffreywang@lji.org)
 
 For general questions about the tool, interpretation, or technical details, contact:
 
-Abhijit Chakraborty (abhijit@lji.org), Jeffrey Wang (jeffreywang@lji.org), Ferhat Ay (ferhatay@lji.org)
+Jeffrey Wang (jeffreywang@lji.org), Abhijit Chakraborty (abhijit@lji.org), Ferhat Ay (ferhatay@lji.org)
