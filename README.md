@@ -49,26 +49,6 @@ Other Dependencies:
 - R R.utils
 - cooler (only if pre-processing _.cool_ files)
 
-## About dcHiC
-
-#### For detailed information on all of these methods, please see <a href = "https://www.dropbox.com/s/dpw2fcyx88un7y4/dcHiC%20Poster%20ISMB%20PPT%20FINAL.pdf?dl=0"> this poster </a> for specifics.
-
-### Multiple Factor Analysis 
-
-Multiple Factor Analysis is a variant of PCA (the traditional way to identify compartments) that normalizes biases between a cohort of datasets. dcHiC uses MFA for an unbiased comparison of any number of groups and datasets. 
-
-### Differential Calling
-
-Based on the groupings specified by the user in the input file (see below), dcHiC takes comparisons between Hi-C datasets in pairwise and group settings. Using a combination of multivariate distance scores, it outputs biologically relevant differential compartments. By default, dcHiC takes every pairwise comparison and one "multi-comparison" across all groups. It outputs a "differential file" with all differential regions and a "full" file with all regions/values. 
-
-### Visualization
-
-Visualization is performed through IGV.js (package igv-reports), which creates standalone HTML files with built-in genome browsers. <a href = "https://dchic-viz.imfast.io/">See examples at this link</a>. For more information on how to run, see the input section below. 
-
-### Filtering Structural Variations 
-
-Large scale structural variations, like translocations and chromothripsis, create nonsense compartment calls. We introduce a measure "SVscore" to quantify this, and employ a filter as an option in dcHiC to address it. See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Filtering-Chromosomes-With-Large-Structural-Variations">wiki page</a> for more.
-
 ## Input File(s) Specifications
 
 The input to dcHiC are tab-delimited O/E Hi-C correlation matrices. Learn how to pre-process data (_.hic_, _.cool_, Hi-C Pro) on <a href = "https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Correlation-Matrices">the wiki page here</a>. Whatever option you choose, you should have directory structure like this before entering compartment analysis: 
@@ -95,6 +75,15 @@ Create a file called input.txt for dcHiC with the format below. The replicate, n
 replicate   name    (grouping)   directory
 ```
 
+For instance:
+```bash
+GM12878.0   GM12878 /path/to/GM_0
+GM12878.1   GM12878 /path/to/GM_1
+GM12878.2   GM12878 /path/to/GM_2
+HMEC.0  HMEC    /path/to/HMEC_0
+HMEC.1  HMEC    /path/to/HMEC_1
+```
+
 #### Important Note: Be sure names do not include underscores or hyphens. 
 
 The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
@@ -112,7 +101,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
 | **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. If not included, dcHiC automatically downloads the necessary files. 
-| **-keepIntermediates**          | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
+| **-keepIntermediates**  | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
 | **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm9/mm10 blacklists. 
 | **-ncp**   | The number of PC's to calculate & choose the final result from. Default is 2. Specify if more wanted.
 | **-SVfilter** | Optional: If you wish to filter for structural variations, use the <a href = "https://github.com/ay-lab/dcHiC/wiki/Filtering-Chromosomes-With-Large-Structural-Variations">SVscore output</a> here. 
@@ -132,7 +121,7 @@ python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -geno
 
 ## Special Specifications
 
-The blacklists are taken from a comprehensive study of problematic regions in the genome, dubbed the ENCODE blacklists. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>.
+Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. These are available in the "files" directory. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
 
 Differential calling uses a large amalgmation of p-values across chromosomes to increase power. If more than 1/5 of chromosomes (specified in -chrFile) have some type of removal, either from SV filtering or manual removal, differential calling will instead be done on a chromosome-by-chromosome level. If there are only _some_ removals (in up to 1/5 of chromosomes), differential calling will be done chromosome-wise for those affected and together for the rest. 
 
@@ -140,7 +129,7 @@ The sample replicate parameter files for human datasets were created using Tier 
 
 ## Visualization Input
 
-Visualization can be run afterward using igvtrack.R, which takes two arguments. The first is a specified genome; the second is the input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ use the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
+Visualization can be run afterward using the igvtrack R script, which takes two arguments. The first is a specified genome; the second is the input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ use the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
 
 ```bash
 file                     name          group
@@ -166,21 +155,21 @@ Inside, the important files are:
 ```bash
 BalancedChrMatrix_exp_XX.txt
 ```
-- HMFA text and bedGraph results: "X" denotes experiment name, "XX" denotes experiment number in input, "XXX" denotes chromosome number
+- HMFA text and bedGraph results: "X" denotes experiment name, "XX" denotes experiment number, "XXX" denotes chromosome number
 ```bash
 hmfa_X_exp_XX.txt
-HMFA_chrXXX_exp_XX.bedGraph
+HMFA_chrXXX_exp_X.bedGraph
 ```
 - pcFiles directory: A directory of all raw PC files
 - Other assorted files for program use
 
-### A DifferentialCompartment directory
+### A Differential Compartment directory
 - All pairwise comparisons between Hi-C groups/groupings (specified in input) XXX and XXX:
 ```bash
     XXX_vs_XXX_full_compartment_details.bedGraph
     XXX_vs_XXX_differential_compartment_details.bedGraph
 ```
-- Comparison file with significant differential interactions among all groups: 
+- A multi-way comparison file with significant differential interactions among all groups: 
 ```bash
     MultiComparison_full_compartment_details.bedGraph
     MultiComparison_differential_compartments_details.bedGraph
