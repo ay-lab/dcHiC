@@ -4,9 +4,8 @@ dcHiC contains a built-in utility to create beautiful, standalone HTML files to 
 
 ## HOMER vs dcHiC
 
-See this page for a comparison of HOMER The file here 
+See this page for a comparison of HOMER and dcHiC compartments. It contains the following tracks:  
 ```markdown
-Syntax highlighted code block
 dcHiC Compartments
 HOMER Compartments
 RNA-Seq Data
@@ -17,7 +16,6 @@ mESC/NPC LaminB1 Profile
 
 See this page for complete mice neural differentiation overview. It contains the following tracks: 
 ```markdown
-Syntax highlighted code block
 dcHiC Compartments
 RNA-Seq Data
 mESC/NPC LaminB1 Profile
