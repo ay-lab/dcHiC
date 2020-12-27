@@ -1,6 +1,6 @@
 # dcHiC: Differential Compartment Analysis of Hi-C Datasets [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization (using IGV.js) and several other useful analysis options. It is one of few tools that normalizes technical biases in Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
+dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Multiple Factor Analysis to normalize technical biases in two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization and several other useful analysis options. It is one of few tools that normalizes technical biases in Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
 
 ## Installation
 
@@ -18,14 +18,6 @@ To install, go to your directory of choice and run:
 git clone https://github.com/ay-lab/dcHiC
 conda env create -f ./dchic/environment.yml
 conda activate dchic
-```
-
-Note: Conda has experienced some trouble as of late with Bioconductor packages. If Bioconductor-IHW raises an error during installation/while running, you may try one of several things. Linux is the recommended platform to perform analysis, but using a fresh miniconda installation can resolve library issues on Mac. Removing IHW from the yml file and install IHW directly via R may also work:
-
-```bash
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install("IHW")
 ```
 
 ### Option 2: Manual Installation
@@ -86,7 +78,7 @@ HMEC.1  HMEC    /path/to/HMEC_1
 
 #### Important Note: Be sure names do not include underscores or hyphens. 
 
-The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same HMFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
+The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same MFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
 
 ## Program Arguments
 
@@ -145,22 +137,24 @@ Rscript /path/to/igvtrack.R [genome] [visualization file]
 Rscript /path/to/igvtrack.R  mm10 viz.txt # an example
 ```
 
+See examples at [ay-lab.github.io/dcHiC](https://ay-lab.github.io/dcHiC). 
+
 ## Output
 
 In the directory where you have run the data, you should have the following:
 
 ### A directory for each chromosome
 Inside, the important files are: 
-- O/E correlation matrices of common bins across input files (for experiment name XX):
+- O/E correlation matrices of common bins across input files (for experiment name X):
 ```bash
-BalancedChrMatrix_exp_XX.txt
+BalancedChrMatrix_exp_X.txt
 ```
-- HMFA text and bedGraph results: "X" denotes experiment name, "XX" denotes experiment number, "XXX" denotes chromosome number
+- Text and bedGraph results: "X" denotes experiment name, "XX" denotes experiment number, "XXX" denotes chromosome number
 ```bash
 hmfa_X_exp_XX.txt
 HMFA_chrXXX_exp_X.bedGraph
 ```
-- pcFiles directory: A directory of all raw PC files
+- A directory of all raw PC files
 - Other assorted files for program use
 
 ### A Differential Compartment directory
