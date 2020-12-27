@@ -1,1 +1,1 @@
-Files for ay-lab.github.io/dchic
+Setup files for ay-lab.github.io/dchic. 
