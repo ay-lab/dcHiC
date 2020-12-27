@@ -1,6 +1,6 @@
 # dcHiC HTML Demo Page
 
-dcHiC contains a built-in utility to create beautiful, standalone HTML files to visualize compartments and other data. See examples from the paper below, or build your own with this [tutorial](https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial). Four examples are included here. 
+dcHiC contains a built-in utility to create beautiful, standalone HTML files to visualize compartments and other data. See examples from the paper below, or build your own with this [tutorial](https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial). Four examples are included here. Do note: these will take a while to load, depending on their size & user internet connection. 
 
 ## HOMER vs dcHiC
 
