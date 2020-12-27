@@ -21,18 +21,18 @@ RNA-Seq Data
 ChIP Signals - H3K9me3, H3K4me3, H3K4me1, H3K27ac
 ```
 
-Notable mESC-specific genes include: Dppa2/4, Zpf42
-Notable NPC/CN-specific genes include: Ptn, Ephb1, Dcx, Rmst
+Notable **mESC**-specific genes include: Dppa2/4, Zpf42   
+Notable **NPC/CN**-specific genes include: Ptn, Ephb1, Dcx, Rmst   
 
 ## Hematopoiesis 
 
 See [this page](https://ay-lab.github.io/dcHiC/html/hematopoiesis.html) for compartment dynamics during mice hematopoetic differentiation. 
 
-Notable granulocyte-specific (activation/inactivation) genes: Sox6, Abca13
+Notable **granulocyte**-specific (activation/inactivation) genes: Sox6, Abca13
 
 ## Human Tissue 
 
 See [this page](https://ay-lab.github.io/dcHiC/html/NormalCellLines.html) for compartments across 11 normal human cell lines/tissue Hi-C samples. 
 
-Notable immune (Naive Germinal B / GM12878) specific gene: CD84 
-Notable hippocampus-specific gene: KLK6
+Notable **immune** (Naive Germinal B / GM12878) specific gene: CD84 
+Notable **hippocampus**-specific gene: KLK6
