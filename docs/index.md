@@ -1,6 +1,8 @@
 # dcHiC HTML Demo Page
 
-dcHiC contains a built-in utility to create beautiful, standalone HTML files to visualize compartments and other data. See examples from the paper below, or build your own with this [tutorial](https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial). Four examples are included here. Do note: these will take a while to load, depending on their size & user internet connection. 
+The following examples were created using dcHiC’s standalone visualization utility, which allows for single-command creation of beautiful, standalone HTML files that allow for interactive compartment/genomic visualization. Each file has a set of controls on the top, which allow users to search by region or by gene. These files, available for download in the GitHub and created using IGV Javascript, will take a few seconds to load.
+
+See examples from the paper below, or build your own with this [tutorial](https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial).
 
 ## HOMER vs dcHiC
 
@@ -26,9 +28,9 @@ Notable **NPC/CN**-specific genes include: Ptn, Ephb1, Dcx, Rmst
 
 ## Hematopoiesis 
 
-See [this page](https://ay-lab.github.io/dcHiC/html/hematopoiesis.html) for compartment dynamics during mice hematopoetic differentiation. 
+See [this page](https://ay-lab.github.io/dcHiC/html/hematopoiesis.html) for compartment dynamics during mice hematopoetic differentiation. This file also contains TPM values for 8 of the cell lines. 
 
-Notable **granulocyte**-specific (activation/inactivation) genes: Sox6, Abca13
+Two notable genes with significant decreasing A-compartment changes include **Myc/Pvt1** and **Meis1**. Others include **Runx2, Sox6, and Abca13**.
 
 ## Human Tissue 
 
