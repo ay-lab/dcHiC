@@ -89,15 +89,13 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-res**                | Resolution of processing (i,e. 100000)
 | **-inputFile**                | Path to input.txt file, as described above
 | **-chrFile**                | File for chromosomes to be processed (one chromosome label per line) 
-| **-input**                | Assign 1 (if using HOMER input) and 2 (for all else): Used to scan file names in input directories. 
+| **-input**                | Assign 1 (if using HOMER input) and 2 (for all else)
 | **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
 | **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. If not included, dcHiC automatically downloads the necessary files. 
 | **-keepIntermediates**  | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
 | **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm9/mm10 blacklists. 
 | **-ncp**   | The number of PC's to calculate & choose the final result from. Default is 2. Specify if more wanted.
-| **-SVfilter** | Optional: If you wish to filter for structural variations, use the <a href = "https://github.com/ay-lab/dcHiC/wiki/Filtering-Chromosomes-With-Large-Structural-Variations">SVscore output</a> here. 
-| **-removeFile** | Optional: If you do not wish to use the SVfilter option but simply want to remove a few chromosomes from a few samples, use this. Enter a tab-delimited file with experiment names on the left column (matching -inputFile) and chromosome numbers ('X', '2') on the right. 
 | **-repParams** | Optional: If using data with no (or few) replicates, use a different set of replicate parameters instead. A set of high-quality parameters is available in the files for mice/human datasets. 
 
 For instance, the following command would run a human non-HOMER input, with a blacklist, 6 chromosomes at a time, at a resolution of 100kb: 
@@ -105,17 +103,15 @@ For instance, the following command would run a human non-HOMER input, with a bl
 ```bash
 python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 6 -genome hg38 -alignData /path/to/hg38_goldenPathData -keepIntermediates 1 -blacklist hg38blacklist_sorted.bed 
 ```
-This command would run a mice HOMER input, with chromosomes in sequence, with a special replicate paramter file, without retaining intermediates, with a blacklist and SVfiltering, at a resolution of 500kb: 
+This command would run a mice HOMER input, with chromosomes in sequence, with a special replicate paramter file, without retaining intermediates, with a blacklist, at a resolution of 500kb: 
 
 ```bash
-python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams mice_params.txt -SVfilter mice.svscore.txt -blacklist mm10blacklist_sorted.bed 
+python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams mice_params.txt -blacklist mm10blacklist_sorted.bed 
 ```
 
 ## Special Specifications
 
 Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. These are available in the "files" directory. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
-
-Differential calling uses a large amalgmation of p-values across chromosomes to increase power. If more than 1/5 of chromosomes (specified in -chrFile) have some type of removal, either from SV filtering or manual removal, differential calling will instead be done on a chromosome-by-chromosome level. If there are only _some_ removals (in up to 1/5 of chromosomes), differential calling will be done chromosome-wise for those affected and together for the rest. 
 
 The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples (with no SV's detected via SVscore). The mice replicate parameter files were created using gold standard mice neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>) with no SV's.  
 
