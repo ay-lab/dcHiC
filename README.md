@@ -103,21 +103,40 @@ For instance, the following command would run a human non-HOMER input, with a bl
 ```bash
 python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 6 -genome hg38 -alignData /path/to/hg38_goldenPathData -keepIntermediates 1 -blacklist hg38blacklist_sorted.bed 
 ```
-This command would run a mice HOMER input, with chromosomes in sequence, with a special replicate paramter file, without retaining intermediates, with a blacklist, at a resolution of 500kb: 
+This command would run a mice HOMER input, with chromosomes in sequence, without retaining intermediates, with a blacklist, at a resolution of 500kb: 
 
 ```bash
-python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams mice_params.txt -blacklist mm10blacklist_sorted.bed 
+python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -blacklist mm10blacklist_sorted.bed 
 ```
 
 ## Special Specifications
 
-Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. These are available in the "files" directory. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
+### Running dcHiC Without Replicates
 
-The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples (with no SV's detected via SVscore). The mice replicate parameter files were created using gold standard mice neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>) with no SV's.  
+Differential calling with dcHiC "learns" the amount that PC (compartment) values vary between biological replicate datasets and uses those parameters for significance thresholds. However, it is also possible to run dcHiC without replicates. Using the run option "-repParams," one can use a pre-trained parameter file (in "files") like this: 
+
+```bash
+python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 4 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams miceparams.txt -blacklist mm10blacklist_sorted.bed 
+```
+
+The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples/ The mice replicate parameter files were created using gold standard mice neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>). 
+
+
+### Standalone Differential Calling
+
+Issues can arise post-processing (for instance: poor concordance in PC values between replicates). In these cases, it is possible to run the differential calling segment standalone as well. The arguments are straightforward and can be accessed with "-h".  Here is one example: 
+
+```bash
+python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist mm10blacklist_sorted.bed -genome mm10 -repParams miceparams.txt
+```
+
+### Other Notes 
+
+Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. These are available in the "files" directory. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
 
 ## Visualization Input
 
-Visualization can be run afterward using the igvtrack R script, which takes two arguments. The first is a specified genome; the second is the input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ use the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
+Visualization can be run afterward using the igvtrack R script, which takes two arguments. The first is a specified genome; the second is the input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ include the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
 
 ```bash
 file                     name          group
