@@ -38,9 +38,9 @@ parser.add_argument("-ncp", action = 'store', dest = 'ncp', help = "Number of pr
 
 parser.add_argument("-repParams", action = 'store', dest = 'repParams', help = "Replicate parameter file (PC variation) to use, if no replicates provided.")
 
-#parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
+parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
 
-#parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
+parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
 
 results = parser.parse_args()
 
