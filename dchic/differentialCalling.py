@@ -29,15 +29,16 @@ parser.add_argument("-res", action = 'store', dest = 'res', help = "Resolution")
 
 parser.add_argument("-multiComp", action = 'store', dest = 'mcomp', help = "Include this field (-multiComp 1) if you want a combined comparison. DEBUG feature. Set true by default.")
 
-parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
-
-parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
-
 parser.add_argument("-repParams", action = 'store', dest = 'reps', help = "Replicate parameter file (PC variation) to use, if no replicates provided.")
 
 parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Blacklist, if used.")
 
 parser.add_argument("-genome", action = 'store', dest = 'genome', help = "Genome: hg38/19, mm10/9")
+
+#parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
+
+#parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
+
 #parser.add_argument("-keepIntermediates", action = 'store', dest = "keepIntermediates", help = "DEBUG FEATURE: Activate to output replicate fitting info while processing")
 
 results = parser.parse_args()
