@@ -194,6 +194,8 @@ HMFA_chrXXX_exp_X.bedGraph
 ```
   
 ### Other Information
+- **chrdistances,txt**: The mean and standard deviation of variation between replicate PC values. Values above 0.3-0.4(ish) indicate poor replicate quality. 
+- **chr_info.txt**: Summary text file indicating the PC # used for each chromosome and whether or not it was flipped during alignment to GC/TSS sites.
 - **Coordinate PNG's**: PC1 vs PC2 plots for experiment groups/groupings. 
 - **PC Selection Info**: See which PC (1 or 2) was used for compartment analysis for each chromosome ("chr_info.txt" and "PCselection.txt")
             
