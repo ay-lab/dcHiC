@@ -129,6 +129,7 @@ else:
     for a in range(1, len(genelist)):
         cmd = cmd + ",\"" + genelist[a] + "\""
     cmd = cmd + "]}' https://toppgene.cchmc.org/API/lookup"  
+    print("\n"+cmd+"\n")
     res = os.popen(cmd).read()
     res = res[res.index("["):].strip()
     res = res[:len(res)-1]
@@ -140,8 +141,11 @@ else:
         passin = passin + "," + str(entrezlist[a])
     passin = passin + "],\"Categories\":[{\"Type\": \"GeneOntologyBiologicalProcess\", \"PValue\": 0.05, \"MinGenes\": 1, \"MaxGenes\": 1500, \"MaxResults\": 30, \"Correction\": \"FDR\"}]}"
     cmd = "curl -H 'Content-Type: text/json' -d '" + passin + "' https://toppgene.cchmc.org/API/enrich"
+    print("\n"+cmd+"\n")
     res = os.popen(cmd).read()
-    res = res[res.index("["):].strip()
+    if "null" in res and len(res) < 25:
+        print("No Significant GO Annotations Found. Exiting.")
+        sys.exit(0)
     res = res[:len(res)-1]
     results = ast.literal_eval(res)
     with open(finalfile, "w") as outf:
@@ -153,6 +157,3 @@ else:
             outstr = str(results[a]['ID']) + "\t" + str(results[a]['Name']) + "\t" + str(results[a]['PValue']) + "\t" + str(results[a]['QValueFDRBH']) + "\t" + str(results[a]['QValueFDRBY']) + "\t" + str(results[a]['QValueBonferroni']) + "\t" + str(results[a]['TotalGenes']) + "\t" + str(results[a]['GenesInTerm']) + "\t" + str(results[a]['GenesInTermInQuery']) + "\t" + str(GeneList) + "\n" 
             outf.write(outstr)
     
-                
-                
-                
