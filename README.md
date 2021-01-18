@@ -61,13 +61,12 @@ The input to dcHiC are tab-delimited O/E Hi-C correlation matrices. Learn how to
 ...
 ```
 
-The chromosome text file should be one chromosome label per line like follows:
+The chromosome text file should be one chromosome label per line like below. Any number of chromosomes (from individual to genomewide) can be run together. 
 ```bash
 1
 2
 3
 ...
-X
 ```
 
 Create a file called input.txt for dcHiC with the format below. The replicate, name, and directory columns are required. The name column descibes a particular Hi-C profile, and each Hi-C profile must have two or more replicates (more replicates increases power of comparisons). Differential calling will be run between the average of the PC's of the replicates under each "name." 
