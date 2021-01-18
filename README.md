@@ -120,24 +120,26 @@ python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -geno
 
 ## Special Specifications
 
-### Running dcHiC Without Replicates
-
-Differential calling with dcHiC "learns" the amount that PC (compartment) values vary between biological replicate datasets and uses those parameters for significance thresholds. However, it is also possible to run dcHiC without replicates. Using the run option "-repParams," one can use a pre-trained parameter file (in "files") like this: 
-
-```bash
-python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 4 -genome mm10 -alignData /path/to/mm10_goldenPathData -repParams miceparams.txt -blacklist mm10blacklist_sorted.bed 
-```
-
-The sample replicate parameter files for human datasets were created using Tier 1 ENCODE GM12878 and HMEC datasets for human samples/ The mice replicate parameter files were created using gold standard mice neural differentiation data (the same as that in our <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">tutorial</a>). 
-
-
 ### Standalone Differential Calling
 
-Issues can arise post-processing (for instance: poor concordance in PC values between replicates). In these cases, it is possible to run the differential calling segment standalone as well. The arguments are straightforward and can be accessed with "-h".  Here is one example: 
+Running the differential calling segment standalone can be useful (for instance, if post-processing reveals poor concordance in replicate PC values). The arguments are straightforward and can be accessed with "-h".  Here is one example: 
 
 ```bash
 python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist mm10blacklist_sorted.bed -genome mm10 -repParams miceparams.txt
 ```
+
+### Cluster Chromosome-By-Chromosome Parallel Processing
+
+With large experimental cohorts (dozens or more), running dcHiC can be time and memory intensive. In these cases, running each chromosome in parallel on a computing cluster may be the best option. This typically entails editing the dchic.py file to only contain the MFA calculation steps (commenting everything after "Exiting Chromosome-By-Chromosome Analysis" in line ~460) and submitting a job per chromosome. Ensure that the -chrFile only contains the individual chromosome. Use the -parallel option, which won't affect runtime with only one thread but which will keep the contents organized. Afterward, perform differential calling standalone as specified above. 
+
+```bash
+python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 1 -genome hg38 -alignData /path/to/hg38_goldenPathData -blacklist hg38blacklist_sorted.bed 
+python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist hg38blacklist_sorted.bed -genome hg38 -repParams humanparams.txt
+```
+
+### Running dcHiC Without Replicates
+
+See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Running-dcHiC-Without-Replicates">wiki page</a>. 
 
 ### Other Notes 
 
@@ -161,7 +163,7 @@ Rscript /path/to/igvtrack.R [genome] [visualization file]
 Rscript /path/to/igvtrack.R  mm10 viz.txt # an example
 ```
 
-See examples at [ay-lab.github.io/dcHiC](https://ay-lab.github.io/dcHiC). The dark green track (p-adjusted values) represent the FDR-adjusted p-values. 
+See examples at [ay-lab.github.io/dcHiC](https://ay-lab.github.io/dcHiC). The dark green track (p-adjusted values) represent the -log10 FDR-adjusted p-values. P-adjusted values under 0.01 (-log10 = 2) are typically used as the threshold. 
 
 ## Output
 
