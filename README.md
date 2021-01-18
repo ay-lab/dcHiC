@@ -61,6 +61,15 @@ The input to dcHiC are tab-delimited O/E Hi-C correlation matrices. Learn how to
 ...
 ```
 
+The chromosome text file should be one chromosome label per line like follows:
+```bash
+1
+2
+3
+...
+X
+```
+
 Create a file called input.txt for dcHiC with the format below. The replicate, name, and directory columns are required. The name column descibes a particular Hi-C profile, and each Hi-C profile must have two or more replicates (more replicates increases power of comparisons). Differential calling will be run between the average of the PC's of the replicates under each "name." 
 
 ```bash
@@ -88,7 +97,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | --------------------- | ----------------------- |
 | **-res**                | Resolution of processing (i,e. 100000)
 | **-inputFile**                | Path to input.txt file, as described above
-| **-chrFile**                | File for chromosomes to be processed (one chromosome label per line) 
+| **-chrFile**                | File for chromosomes to be processed (one chromosome label per line)
 | **-input**                | Assign 1 (if using HOMER input) and 2 (for all else)
 | **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
