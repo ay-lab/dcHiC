@@ -161,7 +161,7 @@ Rscript /path/to/igvtrack.R [genome] [visualization file]
 Rscript /path/to/igvtrack.R  mm10 viz.txt # an example
 ```
 
-See examples at [ay-lab.github.io/dcHiC](https://ay-lab.github.io/dcHiC). 
+See examples at [ay-lab.github.io/dcHiC](https://ay-lab.github.io/dcHiC). The dark green track (p-adjusted values) represent the FDR-adjusted p-values. 
 
 ## Output
 
