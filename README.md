@@ -102,7 +102,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
 | **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. If not included, dcHiC automatically downloads the necessary files. 
 | **-keepIntermediates**  | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
-| **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm9/mm10 blacklists. 
+| **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm10 blacklists 
 | **-ncp**   | The number of PC's to calculate & choose the final result from. Default is 2. Specify if more wanted.
 | **-repParams** | Optional: If using data with no (or few) replicates, use a different set of replicate parameters instead. A set of high-quality parameters is available in the files for mice/human datasets. 
 
@@ -142,7 +142,7 @@ See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Running-dcHiC-Without-Re
 
 ### Other Notes 
 
-Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. These are available in the "files" directory. See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the Boyle Lab <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
+Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. We provide hg19/hg38/mm10 blacklists in the "files" directory (the hg38 and mm10 ones are especially optimized for dcHiC). See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
 
 ## Visualization Input
 
