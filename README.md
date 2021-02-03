@@ -1,6 +1,10 @@
 # dcHiC: Differential Compartment Analysis of Hi-C Datasets [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Multiple Factor Analysis to normalize two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization and several other useful analysis options (web-hosted examples can be seen [here](https://ay-lab.github.io/dcHiC)). It is one of few tools normalizes multiple Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
+dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Multiple Factor Analysis to normalize two or more groups of Hi-C datasets within any hierarchal structure, before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization and several other useful analysis options. It is one of few tools normalizes multiple Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
+
+### Paper (preprint)
+
+For more details about this method, please see our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). See web-hosted visualization examples of case scenarios in the paper [here](https://ay-lab.github.io/dcHiC). 
 
 ## Installation
 
@@ -208,7 +212,7 @@ See <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-
 
 11/14: Bug fixes and slight routine tweaks. Updated blacklists. 
 
-10/10: Substantial revisions made. Improved differential calling/PC selection, updated routines, SV-filtering, manual removal of chromosomes options. 
+10/10: Substantial revisions made. Improved differential calling/PC selection, updated routines. 
 
 ## Contact
 
