@@ -52,13 +52,14 @@ res.hmfa <- HMFA(comb_matrix, H = hierar, type = rep("c",length(hierar[[1]])), n
 name <- paste("Rsession_HMFAObj_", selectedChr, ".rds", sep = "")
 saveRDS(res.hmfa, name)
 
+printoutput = paste("PC Selection Info for", selectedChr)
+print(printoutput)
 if (dataPath == "None") {
   pc.res <- pcselect(obj=res.hmfa, chr=selectedChr, genome=selectedGenome, resolution=selectedRes)
 } else {
   pc.res <- pcselect(obj=res.hmfa, chr=selectedChr, genome=selectedGenome, resolution=selectedRes, folder = normalizePath(dataPath))
 }
 
-print(currentDir)
 setwd(currentDir)
 
 name <- paste("Rsession_", selectedChr, ".rds", sep = "")
@@ -77,8 +78,10 @@ for (i in 1:numElements) {
   write.table(PCvals, file = str_res2, row.names = T, quote = F, col.names = col)
 }
 
-sink("coordinates.txt")
-for (i in 1:2) { # this is assuming you only ever have two levels
-  print(res.hmfa[["group"]][["coord"]][[i]])
-}
-sink()
+# Deprecated Feature
+
+#sink("coordinates.txt")
+#for (i in 1:2) { # this is assuming you only ever have two levels
+#  print(res.hmfa[["group"]][["coord"]][[i]])
+#}
+#sink()
