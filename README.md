@@ -104,7 +104,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-input**                | Assign 1 (if using HOMER input) and 2 (for all else)
 | **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
-| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for examples. If not included, dcHiC automatically downloads the necessary files. 
+| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for 100kb examples. If not included, dcHiC automatically downloads the necessary files. 
 | **-keepIntermediates**  | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
 | **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm10 blacklists 
 | **-ncp**   | The number of PC's to calculate & choose the final result from. Default is 2. Specify if more wanted.
@@ -147,6 +147,8 @@ See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Running-dcHiC-Without-Re
 ### Other Notes 
 
 Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. We provide hg19/hg38/mm10 blacklists in the "files" directory (the hg38 and mm10 ones are especially optimized for dcHiC). See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
+
+dcHiC uses genomic data from UCSC's <a href = "https://genome.ucsc.edu/goldenPath/help/ftp.html">goldenPath</a> data FTP server to create results. This data will be automatically downloaded if not included (for each chromosome run). We recommend running one chromosome standalone to get the data, and then use the same data for all other results.  
 
 ## Visualization Input
 
@@ -201,18 +203,11 @@ HMFA_chrXXX_exp_X.bedGraph
 ### Other Information
 - **chrdistances.txt**: The mean and standard deviation of variation between replicate PC values. Values above 0.3-0.4(ish) indicate poor replicate quality. 
 - **chr_info.txt**: Summary text file indicating the PC # used for each chromosome and whether or not it was flipped during alignment to GC/TSS sites.
-- **Coordinate PNG's**: PC1 vs PC2 plots for experiment groups/groupings. 
 - **PC Selection Info**: See which PC (1 or 2) was used for compartment analysis for each chromosome ("chr_info.txt" and "PCselection.txt")
             
 ## Tutorial: Mice Neural Differentiation Data
 
 See <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">the tutorial page here</a>. 
-
-## Updates
-
-11/14: Bug fixes and slight routine tweaks. Updated blacklists. 
-
-10/10: Substantial revisions made. Improved differential calling/PC selection, updated routines. 
 
 ## Contact
 
