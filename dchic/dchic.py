@@ -30,17 +30,17 @@ parser.add_argument("-alignData", action = 'store', dest = 'goldenpath', help = 
 
 parser.add_argument('-genome', action = 'store', dest = 'genome', help = "Used to determine eigenvector sign. Options: hg38, hg19, mm10, mm9 [If not provided, analysis will skip this step]")
 
-parser.add_argument("-keepIntermediates", action = 'store', dest = 'intermediates', help = "Variable, if set, will keep intermediate files: graphing, R session, tracks, etc.")
+parser.add_argument("-keepIntermediates", action = 'store', dest = 'intermediates', help = "Variable, if set, will keep intermediate Rsession files.")
 
-parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Path to bed file with blacklisted regions not to include. Do not include if not wanted.")
+parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "Path to bed file with blacklisted regions not to include. Highly recommended - see documentation for more details.")
 
 parser.add_argument("-ncp", action = 'store', dest = 'ncp', help = "Number of principal components to scan/use. Default is 2.")
 
 parser.add_argument("-repParams", action = 'store', dest = 'repParams', help = "Replicate parameter file (PC variation) to use, if no replicates provided.")
 
-parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
+#parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "DEBUG feature in development. SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
 
-parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
+#parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "DEBUG feature in development. Manual removal of exp + chr. Two columns: Experiment\tChr.")
 
 results = parser.parse_args()
 
@@ -74,6 +74,9 @@ if results.genome is not None:
 else:
     print("Missing genome option. System exit.")
     sys.exit(1)
+
+filterStatus = 0 # results.filter == none --> 0
+removeStatus = 0 # results.removal == none --> 0
 
 # =============================================================================
 # Scanning input
@@ -121,7 +124,7 @@ for elem in possiblechrs:
     chrTag = elem
     filteredchrs[chrTag] = []
     
-if results.filter is not None:
+if filterStatus != 0:
     numlines = 0
     with open(results.filter, "r") as filterfile:
         exps_list = filterfile.readline().strip().split()
@@ -136,7 +139,7 @@ if results.filter is not None:
                 for a in badExps:
                     filteredchrs[chrTag].append(a)
 
-if results.removal is not None:
+if removeStatus != 0:
     with open(results.removal, "r") as removefile:
         for line in removefile:
             l = line.strip().split()
@@ -178,7 +181,7 @@ def getGroups(chrTag):
                 continue
             line = line.strip()
             temp = line.split()
-            if results.filter is not None:
+            if filterStatus != 0:
                 if temp[1] in filteredchrs[chrTag]: # could be temp[1]
                     continue
             names.append(temp[0])
@@ -287,6 +290,7 @@ def chr_process(chrNum):
         incr+=1
     
     incr = 1
+    print("Creating bedGraph files.")
     for x in range(1, (len(groups_excl)+1)):
         pcaFileLocation = "hmfa_" + str(groups_excl[x-1]) + "_exp_" + str(x) + ".txt" # this will have to change if naming conventions change
         cmd = "python " + os.path.join(scriptdir, "makeBedGraph.py") + " -eigfile " + pcaFileLocation + " -chr "+ chrNum + " -exp " +  str(groups_excl[x-1])
@@ -426,6 +430,16 @@ else:
     logging.debug("Pooling complete.")
 
 # =============================================================================
+# Check Results
+# =============================================================================
+
+for chrNum in chrlist:
+    chrdirec = "chr_" + str(chrNum)
+    if len([name for name in os.listdir(chrdirec) if os.path.isfile(os.path.join(chrdirec, name))]) < 2:
+        print("Error. Nothing in chromosome directories. Some possible errors include: input error & out of memory error.")
+        sys.exit(1)
+
+# =============================================================================
 # Keep/Remove Intermediates 
 # =============================================================================
 
@@ -496,9 +510,9 @@ if isGrouping:
 else:
     if len(groups_excl) > 2:
         cmd = cmd + " -multiComp 1"
-if results.filter is not None:
+if filterStatus != 0:
     cmd = cmd + "  -SVfilter " + results.filter 
-if results.removal is not None:
+if removeStatus != 0:
     cmd = cmd + " -removeFile " + results.removal 
 if results.repParams is not None:
     cmd = cmd + " -repParams " + results.repParams
@@ -508,17 +522,17 @@ print(cmd)
 os.system(cmd)
 
 # =============================================================================
-# Creating score plots
+# Creating score plots - Deprecated Feature 
 # =============================================================================
 
-if results.filter is None and results.removal is not None:
-    command = "python " + os.path.join(scriptdir, "coordinates.py") + " -nExp " + str(numExp) + " " # coordinates averaging
-    for a in names:
-        command += "-exp " + a + " "
-    command += "-nGroups " + str(len(groups_excl)) + " "
-    for x in groups_excl: # should be groups_excl
-        command += "-groups " + x + " "
-    for x in chrlist:
-        command += "-chr " + x + " "
-    print("\n" + command + "\n")
-    os.system(command)
+# if filterStatus == 0 and removeStatus == 0:
+#     command = "python " + os.path.join(scriptdir, "coordinates.py") + " -nExp " + str(numExp) + " " # coordinates averaging
+#     for a in names:
+#         command += "-exp " + a + " "
+#     command += "-nGroups " + str(len(groups_excl)) + " "
+#     for x in groups_excl: # should be groups_excl
+#         command += "-groups " + x + " "
+#     for x in chrlist:
+#         command += "-chr " + x + " "
+#     print("\n" + command + "\n")
+#     os.system(command)
