@@ -121,35 +121,6 @@ This command would run a mice HOMER input, with chromosomes in sequence, without
 python dchic.py -res 500000 -inputFile input.txt -chrFile chr.txt -input 1 -genome mm10 -alignData /path/to/mm10_goldenPathData -blacklist mm10blacklist_sorted.bed 
 ```
 
-## Special Specifications
-
-### Standalone Differential Calling
-
-Running the differential calling segment standalone can be useful (for instance, if post-processing reveals poor concordance in replicate PC values). The arguments are straightforward and can be accessed with "-h".  Here is one example: 
-
-```bash
-python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist mm10blacklist_sorted.bed -genome mm10 -repParams miceparams.txt
-```
-
-### Cluster Chromosome-By-Chromosome Parallel Processing
-
-With large experimental cohorts (dozens or more), running dcHiC can be time and memory intensive. In these cases, running each chromosome in parallel on a computing cluster may be the best option. This typically entails editing the dchic.py file to only contain the MFA calculation steps (commenting everything after "Exiting Chromosome-By-Chromosome Analysis" in line ~460) and submitting a job per chromosome. Ensure that the -chrFile only contains the individual chromosome. Use the -parallel option, which won't affect runtime with only one thread but which will keep the contents organized. Afterward, perform differential calling standalone as specified above. 
-
-```bash
-python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 1 -genome hg38 -alignData /path/to/hg38_goldenPathData -blacklist hg38blacklist_sorted.bed 
-python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist hg38blacklist_sorted.bed -genome hg38 -repParams humanparams.txt
-```
-
-### Running dcHiC Without Replicates
-
-See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Running-dcHiC-Without-Replicates">wiki page</a>. 
-
-### Other Notes 
-
-Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. We provide hg19/hg38/mm10 blacklists in the "files" directory (the hg38 and mm10 ones are especially optimized for dcHiC). See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
-
-dcHiC uses genomic data from UCSC's <a href = "https://genome.ucsc.edu/goldenPath/help/ftp.html">goldenPath</a> data FTP server to create results. This data will be automatically downloaded if not included (for each chromosome run). We recommend running one chromosome standalone to get the data, and then use the same data for all other results.  
-
 ## Visualization Input
 
 Visualization can be run afterward using the igvtrack R script, which takes two arguments. The first is a specified genome; the second is the input file. The first column should contain bedGraph files, the second column should define the name for each file, and the last column should contain labels for the group of each data. Visualization of compartment results _must_ include the "full_compartment_details" files in the DifferentialCompartment folder with the group name "compartment." 
@@ -208,6 +179,35 @@ HMFA_chrXXX_exp_X.bedGraph
 ## Tutorial: Mice Neural Differentiation Data
 
 See <a href = "https://github.com/ay-lab/dcHiC/wiki/Mice-Neural-Differentiation-Tutorial">the tutorial page here</a>. 
+
+## Special Specifications
+
+### Standalone Differential Calling
+
+Running the differential calling segment standalone can be useful (for instance, if post-processing reveals poor concordance in replicate PC values). The arguments are straightforward and can be accessed with "-h".  Here is one example: 
+
+```bash
+python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist mm10blacklist_sorted.bed -genome mm10 -repParams miceparams.txt
+```
+
+### Cluster Chromosome-By-Chromosome Parallel Processing
+
+With large experimental cohorts (dozens or more), running dcHiC can be time and memory intensive. In these cases, running each chromosome in parallel on a computing cluster may be the best option. This typically entails editing the dchic.py file to only contain the MFA calculation steps (commenting everything after "Exiting Chromosome-By-Chromosome Analysis" in line ~460) and submitting a job per chromosome. Ensure that the -chrFile only contains the individual chromosome. Use the -parallel option, which won't affect runtime with only one thread but which will keep the contents organized. Afterward, perform differential calling standalone as specified above. 
+
+```bash
+python dchic.py -res 100000 -inputFile input.txt -chrFile chr.txt -input 2 -parallel 1 -genome hg38 -alignData /path/to/hg38_goldenPathData -blacklist hg38blacklist_sorted.bed 
+python differentialCalling.py -inputFile input.txt -chrFile chr.txt -multiComp 1 -res 100000 -blacklist hg38blacklist_sorted.bed -genome hg38 -repParams humanparams.txt
+```
+
+### Running dcHiC Without Replicates
+
+See the <a href = "https://github.com/ay-lab/dcHiC/wiki/Running-dcHiC-Without-Replicates">wiki page</a>. 
+
+### Other Notes 
+
+Genome blacklisted regions are taken from a comprehensive study of problematic regions in high-throughput sequencing experiments, dubbed the ENCODE blacklists. We provide hg19/hg38/mm10 blacklists in the "files" directory (the hg38 and mm10 ones are especially optimized for dcHiC). See the study <a href = "https://www.nature.com/articles/s41598-019-45839-z">here</a> and the full blacklists from the <a href= "https://github.com/Boyle-Lab/Blacklist/tree/master/lists">here</a>. 
+
+dcHiC uses genomic data from UCSC's <a href = "https://genome.ucsc.edu/goldenPath/help/ftp.html">goldenPath</a> data FTP server to create results. This data will be automatically downloaded if not included (for each chromosome run). We recommend running one chromosome standalone to get the data, and then use the same data for all other results.  
 
 ## Contact
 
