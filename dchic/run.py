@@ -72,6 +72,11 @@ if (int(results.numGroups) <= 1):
 #if len(results.groupingNums) != len(results.groupings):
 #    print("Grouping Nums != # of Group Names Inputted.")
 #    sys.exit()
+    
+for a in results.tag_list:
+    if os.path.isdir(a):
+        print("ERROR: O/E Correlation Matrix Directories Configured Incorrectly.")
+        sys.exit(1)
 
 sumOfGroupNums = 0
 for a in results.groups:
@@ -147,7 +152,6 @@ for i in listoflists:
     commonchrlist[len(commonchrlist)-1] = commonchrlist[len(commonchrlist)-1].replace('\n', '')
     commonlists.append(commonchrlist)
 
-print("Positions Not Shared Across All Data Sets, Chromosome " + results.chrNum + ":\n")
 listdiff = [] # All the positions not shared across data sets (array positions)
 DifferentPositions= [] 
 somethingIsDifferent = False
@@ -166,6 +170,7 @@ nameslist = []
 
 DifferentPositions.sort()
 
+print("Positions Not Shared Across All Data Sets, Chromosome " + results.chrNum + ":")
 if somethingIsDifferent == False:
     print("None")
 
@@ -308,7 +313,7 @@ cmd = cmd + " " + scriptdir
 print("\n" + cmd)
 print("\nR OUTPUT:\n")
 os.system(cmd)
-print("\nR function done!\n")
+print("\n")
 
 oneChrList = []
 for tv1 in range(numChr):
@@ -339,11 +344,12 @@ for topone in oneChrList:
 commonMax = max(commonbins)
 commonMin = min(commonbins)
 #completeCoverage = []
-#PC1  
-print(len(chrExpBins))
+#print(len(chrExpBins))
+
 for ls in range(numExp):
-    print("Removed Positions")
+    print("Removed Positions for Exp \"" + results.expNames[ls] + "\":\n")
     print(removedpositions[ls])
+    print("\n")
     newName = "pc_" + results.expNames[ls] + "_exp_" + str(ls+1) + ".txt"
     with open(newName, "w") as hmfaFile:
         hmfaFile.write("\t\t\tDim.1\n")
@@ -444,8 +450,8 @@ else:
         newName = "hmfa_" + results.groupNames[bigiterator] + "_exp_" + str(bigiterator + 1) + ".txt"
         with open(newName, "w") as output:
             output.write("\t\t\tDim.1\n")
-            print(len(big_group_arr))
-            print(len(big_group_arr[0]))
+            #print(len(big_group_arr))
+            #print(len(big_group_arr[0]))
             for i in range(commonMin, commonMax, expRes):
                 firstColVal = "chr" + str(results.chrNum) + "." + str(i)
                 output.write(firstColVal + "\t" + str(big_group_arr[bigiterator][int((i-commonMin)/expRes)]) + "\n")
