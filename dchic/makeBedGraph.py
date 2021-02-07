@@ -33,7 +33,7 @@ if results.combined is None:
     outputLabel = "chr_" + results.chr + "_exp_" + results.exp
     chrLabel = "chr" + results.chr
     outputname = "HMFA_" + outputLabel + ".bedGraph"
-    print(outputname)
+    #print(outputname)
     if results.pc2 is not None:
         outputname = "PC2_" + outputLabel + ".bedGraph"
     
@@ -133,3 +133,4 @@ else:
             finalfile.write("\n")
     os.chdir("..")
     
+
