@@ -23,7 +23,7 @@ parser.add_argument("-inputFile", action = 'store', dest = 'inputfile', help = "
 
 parser.add_argument("-chrFile", action = 'store', dest = 'chr', help = "Chr file, same as one used in dchic.py")
 
-parser.add_argument("-makePlots", action = 'store', dest = 'makePlots', help = "Set to true if you want plots to be made. DEBUG feature. Set true by default.")
+parser.add_argument("-makePlots", action = 'store', dest = 'makePlots', help = "Set to true if you want replicate variation plots to be made (basically visualizes how much replicate variation there is). DEBUG feature. Set true by default.")
 
 parser.add_argument("-res", action = 'store', dest = 'res', help = "Resolution")
 
@@ -35,9 +35,9 @@ parser.add_argument("-blacklist", action = 'store', dest = 'blacklist', help = "
 
 parser.add_argument("-genome", action = 'store', dest = 'genome', help = "Genome: hg38/19, mm10/9")
 
-parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
+#parser.add_argument("-SVfilter", action = 'store', dest = 'filter', help = "DEBUG feature in development. SV scores text file. Only for single level HMFA. Chrs should be organized same way as chr.txt.")
 
-parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "Manual removal of exp + chr. Two columns: Experiment\tChr.")
+#parser.add_argument("-removeFile", action = 'store', dest = 'removal', help = "DEBUG feature in development. Manual removal of exp + chr. Two columns: Experiment\tChr.")
 
 #parser.add_argument("-keepIntermediates", action = 'store', dest = "keepIntermediates", help = "DEBUG FEATURE: Activate to output replicate fitting info while processing")
 
@@ -52,7 +52,6 @@ if results.blacklist is not None:
 pc_coords = []
 bins = []
 
-
 names = []
 groups = [] # layer 1 of organization 
 groups_excl = []
@@ -64,6 +63,9 @@ groupings_excl = []
 groupings_sizes = []
 isGrouping = False
 startdir = os.getcwd()
+
+filterStatus = 0 # results.filter == none --> 0
+removeStatus = 0 # results.removal == none --> 0
 
 tempchrlist = []
 with open(results.chr, "r") as input:
@@ -91,7 +93,7 @@ for elem in possiblechrs:
     chrTag = elem
     filteredchrs[chrTag] = []
     
-if results.filter is not None:
+if filterStatus != 0:
     numlines = 0
     with open(results.filter, "r") as filterfile:
         exps_list = filterfile.readline().strip().split()
@@ -106,7 +108,7 @@ if results.filter is not None:
                 for a in badExps:
                     filteredchrs[chrTag].append(a)
 
-if results.removal is not None:
+if removeStatus != 0:
     with open(results.removal, "r") as removefile:
         for line in removefile:
             l = line.strip().split()
@@ -197,8 +199,8 @@ def checkInputs(chrTag):
         for line in input:
             line = line.strip()
             temp = line.split()
-            if results.filter is not None and chrTag != 0:
-                if temp[0] in filteredchrs[chrTag]:
+            if filterStatus != 0 and chrTag != 0:
+                if temp[1] in filteredchrs[chrTag]:
                     continue
             names.append(temp[0])
             groups.append(temp[1])
@@ -312,8 +314,10 @@ def getRepParams(chrNum):
     if isinstance(chrNum, list):
         chrlist = chrNum
     elif chrNum != 0: # remove / filter option in place
+        checkInputs(chrNum)
         chrlist = [chrNum]
-        
+    
+    #print(destinations)
     with open("chrdistances.txt", "w") as eucDistanceFile:
         eucDistanceFile.write("m\ts\tchr\n")
         for Chr in chrlist:
@@ -355,7 +359,7 @@ def main():
         distfile = results.reps
     else:
         distfile = "chrdistances.txt"
-    if results.filter is None and results.removal is None: # run all combined
+    if filterStatus == 0 and removeStatus == 0: # run all combined
         checkInputs(0)
         if results.reps is None:
             getRepParams(0)
@@ -463,6 +467,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-                   
-                        
-            
