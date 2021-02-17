@@ -54,7 +54,8 @@ fitModelChromwise <- function(X,Y,M,S,mcomp=FALSE) {
 ## 0.1	0.2	chr1
 ## ...
 ##
-## padj is the adjusted pvalue threshold and dzsc is the zscore cutoff
+## padj is the adjusted pvalue threshold 
+## dzsc is the zscore cutoff (deprecated feature)
 ## mcomp is the multi comparison. Set to FALSE if not required 
 #
 
@@ -158,7 +159,7 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
         cl_padj <- paste0(colnames(combined_data)[r1],"_vs_",colnames(combined_data)[r2],"_Padj")
         obj <- data.frame(dzsc=combined_data[,cl_dzsc],pval=combined_data[,cl_pval])
         #combined_data[,cl_padj] <- IHW::adj_pvalues(IHW::ihw(pval ~ dzsc, data=obj, alpha=0.01))
-        combined_data[,cl_padj] <- invisible(IHW::adj_pvalues(IHW::ihw(pval ~ dzsc, data=obj, alpha=0.01, nbins=ifelse(length(chr) == 1, 50, "auto"))))
+        combined_data[,cl_padj] <- invisible(IHW::adj_pvalues(IHW::ihw(pval ~ dzsc, data=obj, alpha=0.01)))
         bed_result <- data.frame(bed,combined_data[,c(colnames(combined_data)[r1],colnames(combined_data)[r2],cl_md,cl_dzsc,cl_pval,cl_padj)])
         bed_result <- bed_result[order(bed_result$chr),]
         colnames(bed_result)[1] <- "#chr"
@@ -171,7 +172,7 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
         } else {
           write.table(bed_result, file=paste0(colnames(combined_data)[r1],"_vs_",colnames(combined_data)[r2],"_full_compartment_details.bedGraph"),sep="\t",row.names=F,quote=F)
         }
-        bed_result <- bed_result[bed_result$padj < padj & bed_result$dZsc > dzsc,]
+        bed_result <- bed_result[bed_result$padj < padj,] # removed dZsc threshold
         if (length(chr) == 1) {
           write.table(bed_result, file=paste0(chr,"_diffcomp/",colnames(combined_data)[r1],"_vs_",colnames(combined_data)[r2],"_differential_compartments.bedGraph"),sep="\t",row.names=F,quote=F)
         } else {
@@ -221,7 +222,7 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
       } else {
         write.table(bed_result, file=paste0("MultiComparison_full_compartment_details.bedGraph"),sep="\t",row.names=F,quote=F)
       }
-      bed_result <- bed_result[bed_result$padj < padj & bed_result$dZsc > dzsc,]
+      bed_result <- bed_result[bed_result$padj < padj,] #removed dZsc threshold
       if (length(chr) == 1) {
         write.table(bed_result, file=paste0(chr,"_diffcomp/","MultiComparison_differential_compartments.bedGraph"),sep="\t",row.names=F,quote=F) 
       } else { 
