@@ -12,7 +12,7 @@
 datadownload  <- function(genome) {
 
   if (!file.exists(paste0("cytoBand.txt.gz"))) {
-    cytoband <- paste0("cur -O http://hgdownload.cse.ucsc.edu/goldenPath/",genome,"/database/cytoBand.txt.gz")
+    cytoband <- paste0("curl -O http://hgdownload.cse.ucsc.edu/goldenPath/",genome,"/database/cytoBand.txt.gz")
     cat ("Running ",cytoband,"\n")
     system(cytoband, wait=T)
   }
