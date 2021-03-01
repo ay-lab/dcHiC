@@ -146,6 +146,7 @@ else:
     if "null" in res and len(res) < 25:
         print("No Significant GO Annotations Found. Exiting.")
         sys.exit(0)
+    res = res[res.index("["):].strip()
     res = res[:len(res)-1]
     results = ast.literal_eval(res)
     with open(finalfile, "w") as outf:
