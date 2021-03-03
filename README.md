@@ -4,7 +4,7 @@ dcHiC is a tool for differential compartment analysis of Hi-C datasets. It emplo
 
 ### Paper (preprint)
 
-For more details about this method, please see our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). See web-hosted visualization examples of case scenarios in the paper [here](https://ay-lab.github.io/dcHiC). 
+If you want more details about this method or find it useful, please see/cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). See web-hosted visualization examples of case scenarios in the paper [here](https://ay-lab.github.io/dcHiC). 
 
 ## Installation
 
