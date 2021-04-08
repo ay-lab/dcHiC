@@ -104,7 +104,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-input**                | Assign 1 (if using HOMER input) and 2 (for all else)
 | **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
-| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for 100kb examples. If not included, dcHiC automatically downloads the necessary files. 
+| **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for 100kb examples. If not included, dcHiC automatically downloads the necessary files. These are binned at any given resolution (i,e. files for running at 100kb will not work for 1mb processing)!
 | **-keepIntermediates**  | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
 | **-blacklist**     |  Optional but HIGHLY recommended. Removes >1mb regions from the ENCODE blacklist before performing calculations. See "files" for hg19/hg38/mm10 blacklists 
 | **-ncp**   | The number of PC's to calculate & choose the final result from. Default is 2. Specify if more wanted.
