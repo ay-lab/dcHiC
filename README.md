@@ -102,7 +102,7 @@ To run dcHiC from top to bottom, use these arguments in dchic.py:
 | **-inputFile**                | Path to input.txt file, as described above
 | **-chrFile**                | File for chromosomes to be processed (one chromosome label per line)
 | **-input**                | Assign 1 (if using HOMER input) and 2 (for all else)
-| **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. 
+| **-parallel**               | Optional: If you wish to use parallel processing for chromosomes, specify this option with the # of threads to be used. Otherwise, processing will be sequential by chromosome. Using multiple threads masks error output messages, so turn this feature off if you run into an error.
 | **-genome**         | Genome desired (hg38, hg19, mm10, mm9)
 | **-alignData**             | Specify absolute path to UCSC goldenPath data to specify eigenvector sign. See <a href = "https://www.dropbox.com/sh/b9fh8mvkgbcugee/AABfzDQcF_Lt27TjfgrPswrta?dl=0">here</a> for 100kb examples. If not included, dcHiC automatically downloads the necessary files. These are binned at any given resolution (i,e. files for running at 100kb will not work for 1mb processing)!
 | **-keepIntermediates**  | Logical. Whether to keep certain intermediate files (such as R workspace data). Enter any argument (i,e. "1") to set true.
