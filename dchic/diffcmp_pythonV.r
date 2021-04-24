@@ -83,27 +83,19 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
         if (ncol(samplefile) == 3) {
           cat ("Running ",as.character(prefix[j])," ",as.character(pcfiles[i]),"\n")
           selected <- as.vector(samplefile[samplefile$group==prefix[j],]$replicate)
+          selected <- make.names(selected)
           data[[l]] <- apply(df[,selected], 1, mean)
-          #data[[l]] <- apply(df[,c(samplefile[samplefile$group==prefix[j],]$replicate)], 1, mean)
         } else {
           cat ("Running ",as.character(prefix[j])," ",as.character(pcfiles[i]),"\n")
-          #print(print(c(samplefile[samplefile$group==prefix[j],]$replicate)))
           if (nrow(samplefile[samplefile$prefix==prefix[j],]) > 1) {
-            #print("Entered here.")
-            #print(prefix[j])
-            #print(samplefile$prefix)
-            #print(samplefile[samplefile$prefix==prefix[j],])
             selected <- as.vector(samplefile[samplefile$prefix==prefix[j],]$replicate)
-            #print(selected)
+            selected <- make.names(selected)
             data[[l]] <- apply(df[,selected], 1, mean)
-            #head(df[,c(samplefile[samplefile$prefix==prefix[j],]$replicate)])
-            #print(c(samplefile[samplefile$prefix==prefix[j],]$replicate))
-            #data[[l]] <- apply(df[,c(samplefile[samplefile$prefix==prefix[j],]$replicate)], 1, mean)
           } else { 
             #print("Entered other here.")
             selected <- as.vector(samplefile[samplefile$prefix==prefix[j],]$replicate)
+            selected <- make.names(selected)
             data[[l]] <- df[,selected]
-            #data[[l]] <- df[,c(samplefile[samplefile$prefix==prefix[j],]$replicate)]
           }
         }
         l <- l + 1
@@ -138,7 +130,6 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
         r1 <- r1 + 1
       }
       combined_data[[i]] <- data
-      #print (ncol(combined_data[[i]]))
       if (mcomp) {
         combined_distdf[[i]] <- distdf
       }
@@ -238,7 +229,7 @@ diffcmp <- function(chr, pcfiles, samplefile, lprmfile, resolution, mcomp=TRUE, 
 }
 
 # Main Method
-samplefile = read.table(args[length(args)-1], h=T)
+samplefile = read.table(args[length(args)-1], h=T, check.names = FALSE)
 lprmfile = normalizePath(args[length(args)-2])
 
 if (file.exists(paste0(lprmfile))) {
