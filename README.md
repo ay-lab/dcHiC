@@ -88,7 +88,7 @@ HMEC.0  HMEC    /path/to/HMEC_0
 HMEC.1  HMEC    /path/to/HMEC_1
 ```
 
-#### Important Note: Be sure names do not include underscores or hyphens. 
+### Important Note: Be sure names do not include underscores or hyphens. 
 
 The optional "grouping" column can be thought of as an extra layer of organization. If you choose to include it, the same MFA calculation will be run as before although dcHiC will take the average of all replicate PC values under each "grouping" rather than each "name" (which then averages different Hi-C profiles). <a href = "https://www.dropbox.com/sh/2lnsu3wz8j0gfz3/AAAG29_olvkRXuBcU4eFjJiTa?dl=0"> See sample input files here </a>. 
 
