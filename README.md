@@ -2,7 +2,7 @@
 
 dcHiC is a tool for differential compartment analysis of Hi-C datasets. It employs Multiple Factor Analysis to normalize multiple groups of Hi-C datasets before then using learned parameters from replicate data to call significant differential interactions in pairwise and group settings. Beyond this, dcHiC also has options to output beautiful, standalone HTML files for visualization and several other useful analysis options. It is one of few tools normalizes multiple Hi-C datasets and, to our knowledge, the only that performs Hi-C comparisons in group settings. 
 
-### Important: A major update is coming to dcHiC in the next 1-2 months. It will have substantial improvements over the current version and recommend that users look out for it. 
+### Important: A major update is coming to dcHiC in the next few weeks. It will have substantial changes over the current version and recommend that users look out for it. 
 
 ### Paper (preprint)
 
