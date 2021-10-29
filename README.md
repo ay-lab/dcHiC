@@ -32,7 +32,7 @@ To install, go to the directory of your choice and run:
 
 ```bash
 git clone https://github.com/ay-lab/dcHiC
-conda env create -f ./dchic/dchic.yml
+conda env create -f ./dchic.yml
 conda activate dchic
 ```
 
