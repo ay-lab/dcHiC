@@ -49,6 +49,7 @@ To install the dependencies manually, ensure that you have the following package
 - optparse
 - bigstatsr
 - bigreadr
+- limma (bioconductor)
 - robust
 - data.table
 - networkd3
