@@ -84,7 +84,7 @@ matr2_e2.txt  matr2_e2.bed   exp2_R2                  exp2
 
 dcHiC accepts sparse matrices as its input. If you have *.cool* files, see how to convert their format [here](https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Correlation-Matrices#cool). Support for *.hic* files is forthcoming. 
 
-To see the full list of options, run `Rscript dchicf.r --help` or view this file (need to add this file).
+To see the full list of options, run `Rscript dchicf.r --help` or view `dchicdoc.txt` [here](https://github.com/ay-lab/dcHiC/blob/master/dchicdoc.txt).
 
 The matrix file should look like this:
 
