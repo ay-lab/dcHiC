@@ -12,6 +12,8 @@ Now, however, it also has the following improvements and new functions:
 - HMM subcompartment identification based on compartment values
 - Identification of differential loops anchored in significant differential compartments (using [Fit-Hi-C](https://github.com/ay-lab/fithic))
 
+While we hope that all users try the latest version of dcHiC, all code and documentation for the first version remains and we will continue offering support for it into the future. 
+
 ### Paper 
 
 If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). Please note that this paper describes the first iteration of dcHiC, from which there have been fairly significant methodology changes. 
