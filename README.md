@@ -22,7 +22,7 @@ See web-hosted visualization examples of case scenarios in the paper [here](http
 
 ## Installation
 
-The latest version of dcHiC runs pre-dominantly from R (3+) and Python (3+). The necessary packages may be installed via conda or manually. For the core application, the following packages are necessary:
+The latest version of dcHiC runs pre-dominantly from R (3+) and Python (3+). The necessary packages may be installed via conda or manually (those transitioning environments should have most, if not all, of the packages already installed). For the core application, the following packages are necessary:
 
 ### Option 1: Conda
 
