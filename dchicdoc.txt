@@ -1,0 +1,198 @@
++ Rscript dchicf.r --help
+Usage: dchicf.r [options]
+
+
+Options:
+	--file=FILE
+		an input.txt file with the following columns, e.g.
+
+			<mat>	<bed>	<prefix_replicate>	<prefix>
+			mat.txt	mat.bed	name_R1	name
+
+	Note: Do not use '-'/dash and '.'/dot in the prefix_replicate and prefix name
+ 
+	Here mat.txt file is an upper triangular Hi-C sparse matrix
+	It should have the following columns
+
+			<indexA> <indexB> <count>
+
+ 			1 1 300
+ 			1 2 30
+ 			1 3 10
+ 			2 2 200
+ 			2 3 20
+ 			3 3 200
+ 			....
+
+ 	mat.bed is bed file with index information
+ 	It should have the following columns
+
+ 			<chr>	<start>	<end>	<index>
+
+ 			chr1	0	40000	1
+ 			chr1	40000	80000	2
+ 			chr1	80000	120000	3
+ 			....
+
+ 	Optionally it can have an extra column that will denote if the bin is a blacklisted (1) or not (0)
+
+ 			<chr>	<start>	<end>	<index>	<blacklisted>
+
+ 			chr1	0	40000	1	0
+ 			chr1	40000	80000	2	1
+ 			chr1	80000	120000	3	1
+ 			....
+
+ 	dcHiC will omit the blacklisted regions during PCA calculation
+
+
+	--pcatype=PCATYPE
+		pcatype will allow a user to perform different types of step wise analysis on the Hi-C data. 
+ 		Available options: cis/trans/select/analyze/subcomp/dloop/viz, for more details check the small description and example commands to run the analysis
+ 
+
+ 		cis     : Perform PCA on cis interaction matrix, e.g.
+		Rscript ./dchicf.r --file input.txt --pcatype cis --dirovwt T
+
+ 		trans   : Perform PCA on trans interaction matrix, e.g.
+ 		Rscript ./dchicf.r --file input.txt --pcatype trans --dirovwt T
+
+ 		select  : Selection of best PC for downstream analysis [Must after cis or trans step], e.g.
+ 		Rscript ./dchicf.r --file input.txt --pcatype select --dirovwt T --genome mm10 
+
+ 		analyze : Perform differential PCA analysis on the selected PC's across the samples [Must after select step], e.g. 
+ 		Rscript ./dchicf.r --file input.txt --pcatype analyze --dirovwt T --diffdir conditionA_vs_conditionB
+
+ 		subcomp : Assigning sub-compartments based in the PC magnitude values using HMM segmentation [Optional step to classify the compartments based on their magnitude], e.g. 
+ 		Rscript ./dchicf.r --file input.txt --pcatype subcomp --diffdir conditionA_vs_conditionB
+
+ 		fithic  : Before calling the differential loop (dloop) it is advisable to run the fithic part [Must before the differential loop calling part], e.g. 
+ 		Rscript ./dchicf.r --file input.txt --pcatype fithic --dirovwt T --diffdir conditionA_vs_conditionB --maxd 10e6 --fithicpath '/path/to/fithic.py' --pythonpath '/path/to/python3.x/python'
+
+
+ 		dloop   : Find differential loops anchored in at least one of the differential compartments across the samples [Optional but recommended step to find differential loops originating from differential compartments], e.g. 
+ 		Rscript ./dchicf.r --file input.txt --pcatype dloop --diffdir conditionA_vs_conditionB --maxd 10e6 --minc 0 
+
+ 		viz     : Generate IGV vizualization html file [Must inorder to vizualize the result]
+ 		Rscript ./dchicf.r --file input.txt --pcatype viz --diffdir conditionA_vs_conditionB --genome mm10 
+
+ 		enrich  : Perform gene enrichment analysis [Gene set enrichment of differential genes/loops overlapping genes], e.g.
+ 		Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both 
+ 		
+
+
+	--ebackgrnd=EBACKGRND
+		Expected genomic background to calculate Observed/Expected ratio
+ 		1 : Scheme 1 will use the full genomic background to calculate the expected counts 
+ 		2 : Scheme 2 will chromosome wise background to estimate the expected counts [default]
+
+
+	--pc=PC
+		Number of PC's to be written 
+ 		[default 2]
+
+
+	--rowmrge=ROWMRGE
+		This is the number of consecutive rows to be merged in the trans matrix file and add the column count values to reduce the overall size 
+ 		[rows=trans bins, cols=cis bins, default=10,000]
+
+
+	--genome=GENOME
+		Genome name, e.g. hg38/hg19/mm10/mm9 
+ 		[default NONE, should be provided by the user]
+
+
+	--bdgfile=BDGFILE
+		Additional bedGraph files to be visualized in the html file. Optional for viz step. This is a single three column txt file
+
+  		<path to bedGraph>	<name>	<type>	<pos color:neg color>
+
+  		The pos and neg color is the RGB code will represent the respective postive and negative score distribution in the bedGraph file
+  		If you have only postive score, keep the neg part as 0, e.g. 250,0,0:0
+
+
+	--rzsc=RZSC
+		Replicate zscore threshold. Increasing the value makes dcHiC non-specific towards replicate-wise PC variation  
+ 		[default 2]
+
+
+	--szsc=SZSC
+		Sample zscore threshold. Increasing the value makes dcHiC specific towards finding large PC difference across sample
+ 		[default 0]
+
+
+	--fdr=FDR
+		Report only above this FDR threshold
+ 		[default 0.05]
+
+
+	--gscore=GSCORE
+		Glosh score threshold. Glosh score will help to remove lone differential compartments in the chromosome. A glosh score of 1 means it the differential compartments are highly clustered, while 0 means it is a lone region
+ 		[default 0.7]
+
+
+	--subnum=SUBNUM
+		Total number of sub-compartments to find 
+ 		[default 6]
+
+
+	--minc=MINC
+		Minimum interaction count to be retained during differential loop calling 
+ 		[default 6]
+
+
+	--maxd=MAXD
+		Maximum distance (bp) between interactions to be kept during differential loop calling 
+ 		[default 2e6]
+
+
+	--exclA=EXCLA
+		Setting this option to TRUE will allow dcHiC to search genes that are overlapping with differential-A regions in a sample and B in all others
+
+
+	--region=REGION
+		dcHiC finds differential compartments (anchors) and then differential interactions (interactors) anchored in differential compartments
+		Setting this option to 'anchor' will only search genes overlapping with differential compartments. When set to 'interactors', the genes overlaping with the ineracting regions will be scanned
+		[anchor/interactor/both default both]
+
+
+	--diffdir=DIFFDIR
+		Folder name under which all the differential results will be saved
+ 		[default sample]
+
+
+	--dirovwt=DIROVWT
+		Overwrite the existing directories and files 
+ 		[default FALSE]
+
+
+	--fithicpath=FITHICPATH
+		Path to the fithic code [Must for fithic section]
+ 		[Check for details https://github.com/ay-lab/fithic]
+
+
+	--pythonpath=PYTHONPATH
+		Path to the python (>= 3 version) [Must for fithic section]
+
+
+	--sthread=STHREAD
+		Number of threads to be used for parallel sample processing. Can be used using cis/trans/fithic section 
+ 		[default 1]
+
+
+	--cthread=CTHREAD
+		Number of threads to be used for parallel chromosome processing per sample Can be used using cis/trans section 
+ 		[default 1]
+
+
+	--pthread=PTHREAD
+		Number of threads to be used for pca calculation per chromosome per sample Can be used using cis/trans section 
+ 		[default 1]
+
+ 	Note: The total number of threads will be used is = sthread X cthread X pthread
+
+
+	-h, --help
+		Show this help message and exit
+
+
