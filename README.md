@@ -16,7 +16,7 @@ Now, however, it also has the following improvements and new functions:
 
 If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). Please note that this paper describes the first iteration of dcHiC, from which there have been fairly significant methodology changes. 
 
-See web-hosted visualization examples of case scenarios in the paper [here](https://ay-lab.github.io/dcHiC). 
+See web-hosted visualization examples of case scenarios in the paper [here](https://ay-lab.github.io/dcHiC). Updated examples for the newer version are forthcoming.
 
 ## Installation
 
