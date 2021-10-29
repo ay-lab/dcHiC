@@ -50,6 +50,7 @@ To install the dependencies manually, ensure that you have the following package
 - bigstatsr
 - bigreadr
 - limma (bioconductor)
+- IHW (bioconductor)
 - robust
 - data.table
 - networkd3
