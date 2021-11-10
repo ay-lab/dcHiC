@@ -74,10 +74,10 @@ Options:
  		Rscript ./dchicf.r --file input.txt --pcatype dloop --diffdir conditionA_vs_conditionB --maxd 10e6 --minc 0 
 
  		viz     : Generate IGV vizualization html file [Must inorder to vizualize the result]
- 		Rscript ./dchicf.r --file input.txt --pcatype viz --diffdir conditionA_vs_conditionB --genome mm10 
+ 		Rscript ./dchicf.r --file input.txt --pcatype viz --diffdir conditionA_vs_conditionB --genome mm10 --pcgroup pcQnm
 
  		enrich  : Perform gene enrichment analysis [Gene set enrichment of differential genes/loops overlapping genes], e.g.
- 		Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both 
+ 		Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm --interaction intra --pcscore F --compare F
  		
 
 
@@ -128,7 +128,7 @@ Options:
 
 	--gscore=GSCORE
 		Glosh score threshold. Glosh score will help to remove lone differential compartments in the chromosome. A glosh score of 1 means it the differential compartments are highly clustered, while 0 means it is a lone region
- 		[default 0.7]
+ 		[default 0]
 
 
 	--subnum=SUBNUM
@@ -147,13 +147,35 @@ Options:
 
 
 	--exclA=EXCLA
-		Setting this option to TRUE will allow dcHiC to search genes that are overlapping with differential-A regions in a sample and B in all others
+		Setting this option to TRUE will allow dcHiC to search genes that are overlapping with differential-A regions in a sample and B in all others [default TRUE]
+
+
+	--pcscore=PCSCORE
+		Setting this option to TRUE will allow dcHiC to search genes that are overlapping with differential-A regions with higher pc score than rest of the samples [default FALSE]
+
+
+	--interaction=INTERACTION
+		dcHiC can perform functional enrichment over both cis/intra and trans/inter compartments. This will allow the user to choose the compartment type [default intra]
+
+
+	--compare=COMPARE
+		dcHiC can perform functional enrichment between a pair of defined sample. Set this option to TRUE when user needs to compare function enrichment of A-compartment genes bwteen a pair instead all the samples [default FALSE]
+
+
+	--cells=CELLS
+		When the compare argument is set to TRUE then dcHiC expects the name <prefix> of sample pairs provided in the input.txt file [example prefix1,prefix2]
 
 
 	--region=REGION
 		dcHiC finds differential compartments (anchors) and then differential interactions (interactors) anchored in differential compartments
 		Setting this option to 'anchor' will only search genes overlapping with differential compartments. When set to 'interactors', the genes overlaping with the ineracting regions will be scanned
 		[anchor/interactor/both default both]
+
+
+	--pcgroup=PCGROUP
+		Setting the option to pcQnm will direct dcHiC to use quantile normalized PC values to create IGV html file. When set to pcOri, dcHiC will use the original PC values in IGV html file (viz step)
+		Gene enrichment step will also be effected by the option accordingly.
+		[pcQnm/pcOri default pcQnm]
 
 
 	--diffdir=DIFFDIR
@@ -194,5 +216,4 @@ Options:
 
 	-h, --help
 		Show this help message and exit
-
 
