@@ -154,7 +154,7 @@ Rscript dchicf.r --file input.ES_NPC.txt --pcatype fithic --dirovwt T --diffdir 
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype dloop --dirovwt T --diffdir ES_vs_NPC_100Kb
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype subcomp --dirovwt T --diffdir ES_vs_NPC_100Kb
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype viz --diffdir ES_vs_NPC_100Kb --genome mm10 
-Rscript dchicf.r --file input.ES_NPC.txt --pcatype enrich --genome mm10 --diffdir ES_vs_NPC_100Kb --exclA T
+Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm --interaction intra --pcscore F --compare F
 ```
 
 ## Output
@@ -172,7 +172,7 @@ Other `subcompartments` and `compartmentLoops` may be there depending on whether
 There are a few technical implementation items to note: 
 
 1) Quantile Normalization. Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
-2) Glosh score. Stray differential compartments (lone variable bins) can affect comparisons. The 'glosh score' is a measure from 0 to 1 of how clustered the differential compartments are (0 = very isolatd; 1 is completely clustered); by default, dcHiC filters isolated lone compartments. The default we found to work best is 0.7.
+2) Glosh score. Stray differential compartments (lone variable bins) can affect comparisons. The 'glosh score' is a measure from 0 to 1 of how clustered the differential compartments are (0 = very isolatd; 1 is completely clustered); by default, dcHiC filters no lone compartments. We have found a glosh score of 0.7 to work as a good stringent filtering criterion.
 
 ## Contact
 
