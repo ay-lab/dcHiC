@@ -12,7 +12,7 @@ Try `Rscript reselectpc.r --help` for all options. Below are some examples:
 
 # Using Existing PC values with dcHiC
 
-Using this code, anyone can reformat their existing pc values such that they can use dcHiC. The input must be a five column text file with the following fields: 
+Using `getcHiCinputfromExistingPCs.r`, anyone can reformat their existing pc values such that they can use dcHiC. The input must be a five column text file with the following fields: 
 ```
 <pc bedGraph path>	<pc type>	<replicate name>	<sample name>
 ```
