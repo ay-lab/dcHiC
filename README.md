@@ -1,6 +1,6 @@
 # dcHiC: Differential Compartment Analysis of Hi-C Datasets [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release, and remains the only tool to perform Hi-C compartment analyses between multiple datasets. Like in the first release, the latest version provides:
+dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release (under the branch "dcHiC-v1"), and remains the only tool to perform Hi-C compartment analyses between multiple datasets. Like in the first release, the latest version provides:
 
 - Comprehensive identification of significant compartment changes between any number of cell lines (with replicates)
 - Beautiful standalone HTML files for visualization of results
