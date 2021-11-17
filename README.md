@@ -34,11 +34,11 @@ To install, go to the directory of your choice and run:
 
 ```bash
 git clone https://github.com/ay-lab/dcHiC
-conda env create -f ./dchic.yml
+conda env create -f ./packages/dchic.yml
 conda activate dchic
 ```
 
-Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz`. 
+Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz` (functions file under 'packages'). 
 
 ### Option 2: Manual Installation
 
@@ -56,14 +56,14 @@ To install the dependencies manually, ensure that you have the following package
 - networkd3
 - DepmixS4
 - json
-- hashmap
+- hashmap (.tar.gz file under 'packages')
 
 ### Packages in Python
 - igv-reports
 
-Those who wish to perform differential loop analysis should also download the latest Python version of FitHiC, which requires a set of [Python libraries](https://github.com/ay-lab/fithic): numpy, scipy, sk-learn, sortedcontainers, and matplotlib. You may also need to install 'cooler' if you wish to use *.cool* files.
+Those who wish to perform differential loop analysis should also download the latest Python version of FitHiC, which requires a set of [Python libraries](https://github.com/ay-lab/fithic): numpy, scipy, sk-learn, sortedcontainers, and matplotlib. You may also need to install 'cooler' if you wish to use *.cool* files. See [documentation](https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Data) on how to do so. 
 
-Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz`. 
+Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz` (functions file under 'packages'). 
 
 ## Input File
 
@@ -78,10 +78,10 @@ Create an input file for dcHiC with the format below. The matrix and bed columns
 For instance, consider this sample file which describes two replicates for two Hi-C profiles:
 
 ```
-matr1_e1.txt  matr1_e1.bed   exp1_R1                  name1
-matr2_e1.txt  matr2_e2.bed   exp1_R2                  name1
-matr1_e2.txt  matr1_e2.bed   exp2_R1                  exp2
-matr2_e2.txt  matr2_e2.bed   exp2_R2                  exp2
+matr1_e1.txt  matr1_e1.bed   exp1_R1_100kb                  exp1
+matr2_e1.txt  matr2_e2.bed   exp1_R2_100kb                  exp1
+matr1_e2.txt  matr1_e2.bed   exp2_R1_100kb                  exp2
+matr2_e2.txt  matr2_e2.bed   exp2_R2_100kb                  exp2
 ```
 
 ## Input Data
@@ -159,13 +159,38 @@ Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir con
 
 ## Output
 
-As output, dcHiC creates an overarching directory named `DifferentialResult`. For every input cell line *XX*, there will be a directory *XX_data* containing the raw compartment results for each individual replicate of the cell line. 
+As output, dcHiC creates two types of directories. The first are raw PCA results, in directories named after the third column of the input file. One of these is created for each input Hi-C profile; inside, there will be directories "intra_pca" or "inter_pca" depending on whether the user specified compartment calculations based on intra- or inter-chromosomal interactions and raw PC values for each chromosome inside each one. 
 
-In addition to the raw compartment results for each cell line, there are also two output directories `PcOri` and `PcQnm` with combined and quantile-normalized compartment results. Finally, there will be a directory `fdr_result` containing differential compartment, loop, and subcompartment results. 
+The second overarching directory is called `DifferentialResult`, which contains directories for differential results (on any number of parameter settings). These directory names are specified under the `-analyze` pcatype option (which performs differential calling) dcHiC where users denote a `--diffdir` where they want the analysis to be done. Multiple directories, with different analysis parameters, can be stored under the global DifferentialResult directory. 
 
-The `sample_combined` files contain complete bedGraphs with average PC values across replicates for all *XX* cell lines, as well as a final adjusted p-value denoting the significance of changes between Hi-C experiments for that compartment bin. The `sample_combined.Filtered` files contain the same information, filtered by a p-value cutoff. 
+Inside each *diffdir*, there are raw compartment results ("expXX_data") and two PC output directories `PcOri` and `PcQnm` with combined and quantile-normalized compartment results. Finally, there will be a directory `fdr_result` containing differential compartment, loop, and subcompartment results. Inside `fdr_result`, the `sample_combined` files contain complete bedGraphs with average PC values across replicates for all *XX* cell lines, as well as a final adjusted p-value denoting the significance of changes between Hi-C experiments for that compartment bin. The `sample_combined.Filtered` files contain the same information, filtered by a p-value cutoff. 
 
 Other `subcompartments` and `compartmentLoops` may be there depending on whether the user opted to run those options. The differential loop files list significant loop interactions and their associated differential compartment anchors, whereas the `subcompartment` files illustrate HMM-segmented subcompartments based on the magnitude of the PC values. 
+
+Below is a diagram of the overarching results structure, containing two different runs (
+```
+dcHiC_dir
+ exp1_rep1_100kb_pca
+   intra_pca
+      [files]
+   inter_pca
+      [files]
+ exp1_rep2_100kb_pca
+ exp2_rep1_100kb_pca
+ exp2_rep2_100kb_pca
+ DifferentialResult
+   inter_100kb_diff
+     [files]
+   intra_100kb_diff
+     exp1_data
+     exp2_data
+     fdr_result
+     fithic_run
+     geneEnrichment
+     pcOri
+     pcQnm
+     viz
+```
 
 ## Technical Specifications
 
