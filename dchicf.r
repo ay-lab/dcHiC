@@ -813,7 +813,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 			
 			data_rep <- data[data$prefix.master == prefix_master[i],]
 			sample_count <- sample_count + nrow(data_rep)
-
 			if (!dir.exists(paste0(diffolder,"/",prefix_master[i],"_data"))) {
 				dir.create(paste0(diffolder,"/",prefix_master[i],"_data"))
 			}
@@ -2237,23 +2236,72 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm") {
 
 ########################### Gene enrichment ###########################
 
-geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgrp="pcQnm") {
+geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgrp="pcQnm", interaction="intra", pcscore=F, compare=F, cells="X,Y", fdr_thr=0.05) {
 
+	print (prefix_master)
 	prefix_master <- unique(as.character(data$prefix.master))
-	fithic <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.intra_compartmentLoops.FithicSignificant.txt"), h=T)
-	fithic <- fithic[,c("chr1","start1","chr2","start2",prefix_master)]
-	fithic[,"id1"] <- paste0(fithic$chr1,"_",fithic$start1)
-	fithic[,"id2"] <- paste0(fithic$chr2,"_",fithic$start2)
-
-	bedpe <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.intra_compartmentLoops.bedpe"), h=T, as.is=T)
-	bedpe <- bedpe[order(bedpe$chr1, bedpe$start1),]
-	if(!dir.exists(paste0("DifferentialResult/",diffdir,"/geneEnrichment"))) {
-		dir.create(paste0("DifferentialResult/",diffdir,"/geneEnrichment"))
+	if (compare) {
+		prefix_master <- strsplit(cells,",")[[1]]
 	}
-	resolution <- bedpe$end1[1] - bedpe$start1[1]
+
+	folder <- paste0("DifferentialResult/",diffdir,"/geneEnrichment")
+	if(!dir.exists(folder)) {
+		dir.create(folder)
+	}
+	if (compare == TRUE) {
+		folder <- paste0("DifferentialResult/",diffdir,"/geneEnrichment/comparison_",paste0(strsplit(cells,",")[[1]],collapse="_vs_"))
+		if (!dir.exists(folder)) {
+			dir.create(paste0("DifferentialResult/",diffdir,"/geneEnrichment/comparison_",paste0(strsplit(cells,",")[[1]],collapse="_vs_")))
+		}
+	}
+
+	compartment_score <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.",pcgrp,".bedGraph"), h=T, as.is=T)
+	diff_compartments <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.Filtered.",pcgrp,".bedGraph"), h=T, as.is=T)
+	rownames(compartment_score) <- paste0(compartment_score$chr,"_",compartment_score$start)
+	rownames(diff_compartments) <- paste0(diff_compartments$chr,"_",diff_compartments$start)
+	resolution <- compartment_score$end[1] - compartment_score$start[1]
 	resolution <- as.integer(resolution)
-	if (!file.exists(paste0(genome,"_",resolution,"_goldenpathData"))) {
-		stop(paste0(genome,"_",resolution,"_goldenpathData does not exist, error!"))
+
+	print (paste0(genome,"_",resolution,"_goldenpathData"))
+	if (!dir.exists(paste0(genome,"_",resolution,"_goldenpathData"))) {
+		cat(paste0(genome,"_",resolution,"_goldenpathData does not exist, creating!"))
+
+		## Data download and processing 
+    	folder_genome <- paste0(genome,"_",as.integer(resolution),"_goldenpathData")
+    	dir.create(folder_genome)
+    	folder_genome <- normalizePath(folder_genome)
+
+
+  		current_path <- getwd()
+		setwd(folder_genome)
+		datadownload(genome)
+  		setwd(current_path)
+
+ 		if (!file.exists(paste0(folder_genome,"/",genome,".fa"))) {
+   			cat ("Unzipping ",paste0(folder_genome,"/",genome,".fa.gz"),"\n")
+   			system(paste0("gunzip -c ",folder_genome,"/",genome,".fa.gz > ",folder_genome,"/",genome,".fa"), wait=T)
+		}
+		if (!file.exists(paste0(folder_genome,"/",genome,".tss.bed"))) {
+   			cmd <- paste0("gunzip -c ",folder_genome,"/",genome,".refGene.gtf.gz |awk -v OFS='\\t' '{if($3==\"transcript\"){if($7==\"+\"){print $1,$4,$4+1}else{print $1,$5-1,$5}}}' |grep -v \"alt\" |grep -v \"random\" |sort |uniq |sort -k 1,1 -k2,2n > ",folder_genome,"/",genome,".tss.bed")
+   			cat ("Running ",cmd,"\n")
+   			system(cmd, wait=T)
+		}
+		if (!file.exists(paste0(folder_genome,"/",genome,".binned.bed"))) {
+  			cmd <- paste0(.findExecutable("bedtools")," makewindows -g ",folder_genome,"/",genome,".chrom.sizes -w ",as.integer(resolution)," > ",folder_genome,"/",genome,".binned.bed")
+   			cat ("Running ",cmd,"\n")
+   			system(cmd, wait=T)
+		}
+		if (!file.exists(paste0(folder_genome,"/",genome,".GCpt.bedGraph"))) {
+  			cmd <- paste0(.findExecutable("bedtools")," nuc -fi ",folder_genome,"/",genome,".fa -bed ",folder_genome,"/",genome,".binned.bed |grep -v \"#\" |awk -v OFS='\\t' '{print $1,$2,$3,$5}' |grep -v \"alt\" |grep -v \"random\" |sort -k 1,1 -k2,2n > ",folder_genome,"/",genome,".GCpt.bedGraph")
+  			cat ("Running ",cmd,"\n")
+   			system(cmd, wait=T)
+		}
+		if (!file.exists(paste0(folder_genome,"/",genome,".GCpt.tss.bedGraph"))) {
+			cmd <- paste0(.findExecutable("bedtools")," map -a ",folder_genome,"/",genome,".GCpt.bedGraph -b ",folder_genome,"/",genome,".tss.bed -c 1 -o count -null 0 > ",folder_genome,"/",genome,".GCpt.tss.bedGraph")
+    		cat ("Running ",cmd,"\n")
+    		system(cmd, wait=T)
+  		}
+
 	}
 	refgene <- read.table(paste0(genome,"_",resolution,"_goldenpathData/",genome,".refGene.gtf.gz"), h=F, sep="\t", fill=NA)
 	refgene_bed <- refgene[refgene$V3=="transcript",c(1,4,5)]
@@ -2261,104 +2309,218 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
 	refgene_bed[,"gene"]  <- gsub(";","",do.call(rbind,strsplit(as.character(refgene[refgene$V3=="transcript",]$V9)," "))[,2])
 	refgene_bed <- unique(refgene_bed)
 	refgene_bed <- refgene_bed[order(refgene_bed$chr, refgene_bed$start),]
-	write.table(refgene_bed, file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/refgene.bed"), row.names=F, col.names=F, sep="\t", quote=F)
+	write.table(refgene_bed, file=paste0(folder,"/refgene.bed"), row.names=F, col.names=F, sep="\t", quote=F)
 
-	compartment_score <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.intra_sample_group.",pcgrp,".bedGraph"), h=T, as.is=T)
-	diff_compartments <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.intra_sample_group.Filtered.",pcgrp,".bedGraph"), h=T, as.is=T)
-	bed <- data.frame(
-		chr=c(as.character(bedpe$chr1),as.character(bedpe$chr2),as.character(diff_compartments$chr)), 
-		start=c(bedpe$start1,bedpe$start2,diff_compartments$start), 
-		end=c(bedpe$end1,bedpe$end2,diff_compartments$end))
-
-	bed <- unique(bed)
-	bed <- bed[order(bed$chr,bed$start),]
-	rownames(bed) <- paste0(bed$chr,"-",bed$start)
-	rownames(compartment_score) <- paste0(compartment_score$chr,"-",compartment_score$start)
-	rownames(diff_compartments) <- paste0(diff_compartments$chr,"-",diff_compartments$start)
-	bed[,"region"] <- "interactor"
-	bed[rownames(diff_compartments),"region"] <- "anchor"
-	bed[,"sample"] <- 0
-
-	for(i in 1:length(prefix_master)) {
-		bed_sample <- bed
-		if (!dir.exists(paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment"))) {
-			dir.create(paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment"))
+	if (region == "anchor" | region == "interactor" | region == "both") {
+		if (exclA == FALSE & pcgrp == "pcOri") {
+			compartment_score_pcQnm <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.pcQnm.bedGraph"), h=T, as.is=T)
+			diff_compartments_pcQnm <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.Filtered.pcQnm.bedGraph"), h=T, as.is=T)
+			rownames(compartment_score_pcQnm) <- paste0(compartment_score_pcQnm$chr,"_",compartment_score_pcQnm$start)
+			rownames(diff_compartments_pcQnm) <- paste0(diff_compartments_pcQnm$chr,"_",diff_compartments_pcQnm$start)
+			for(i in 1:length(prefix_master)) {
+				if(!dir.exists(paste0(folder,"/",prefix_master[i],"_geneEnrichment"))) {
+					dir.create(paste0(folder,"/",prefix_master[i],"_geneEnrichment"))
+				}
+				diff_compartments_sample_A <- diff_compartments[,c("chr","start","end",prefix_master[i])]
+				colnames(diff_compartments_sample_A)[4] <- "sample"
+				diff_compartments_sample_A <- diff_compartments_sample_A[diff_compartments_sample_A$sample > 0,]
+				if (pcscore) {
+					diff_compartments_pcQnm_sample <- diff_compartments_pcQnm[,c("chr","start","end",prefix_master[i])]
+					colnames(diff_compartments_pcQnm_sample)[4] <- "sample"
+					if (length(prefix_master) > 2) {
+						diff_compartments_pcQnm_rest <- diff_compartments_pcQnm[,c(prefix_master[which(prefix_master != prefix_master[i])])]
+						diff_compartments_pcQnm_sample[,"sample_rest"] <- apply(diff_compartments_pcQnm_rest, 1, max)
+					} else {
+						diff_compartments_pcQnm_sample[,"sample_rest"] <- diff_compartments_pcQnm[,c(prefix_master[which(prefix_master != prefix_master[i])])]
+					}
+					diff_compartments_pcQnm_sample <- diff_compartments_pcQnm_sample[diff_compartments_pcQnm_sample$sample > diff_compartments_pcQnm_sample$sample_rest,]
+					diff_compartments_sample_A <- na.omit(diff_compartments_sample_A[rownames(diff_compartments_pcQnm_sample),])
+					write.table(diff_compartments_sample_A[,1:3], file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
+				} else {
+					write.table(diff_compartments_sample_A[,1:3], file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
+				}
+			}
+		} else if (exclA == TRUE & (pcgrp == "pcOri" | pcgrp == "pcQnm")) {
+			for(i in 1:length(prefix_master)) {
+				if(!dir.exists(paste0(folder,"/",prefix_master[i],"_geneEnrichment"))) {
+					dir.create(paste0(folder,"/",prefix_master[i],"_geneEnrichment"))
+				}
+				diff_compartments_sample_A <- diff_compartments[,c("chr","start","end",prefix_master[i])]
+				colnames(diff_compartments_sample_A)[4] <- "sample"
+				if (length(prefix_master) > 2) {
+					diff_compartments_sample_rest <- diff_compartments[,c(prefix_master[which(prefix_master != prefix_master[i])])]
+					diff_compartments_sample_A[,"sample_rest"] <- apply(diff_compartments_sample_rest, 1, max)
+				} else {
+					diff_compartments_sample_A[,"sample_rest"] <- diff_compartments[,c(prefix_master[which(prefix_master != prefix_master[i])])]
+				}
+				if (pcscore) {
+					cat ("When exclA option is set as TRUE, pcscore option will be treated as FALSE\n")
+				}
+				diff_compartments_sample_A <- diff_compartments_sample_A[diff_compartments_sample_A$sample > 0 & diff_compartments_sample_A$sample_rest < 0,]
+				write.table(diff_compartments_sample_A[,1:3], file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
+			}
 		}
 
-		bed_sample[,"sample"] <- compartment_score[rownames(bed_sample), prefix_master[i]]
-		bed_sample  <- bed_sample[bed_sample$sample > 0,]
-		if (exclA) {
-			prefix_rest <- prefix_master[which(prefix_master != prefix_master[i])]
-			if (length(prefix_rest) > 1) {
-				rest_B_mat <- compartment_score[(apply(compartment_score[,c(prefix_rest)], 1, max) < 0),]
-			} else {
-				rest_B_mat <- compartment_score[which(compartment_score[,c(prefix_rest)] < 0),]
-			}
-			bed_sample <- bed_sample[intersect(rownames(bed_sample),rownames(rest_B_mat)),]
-			bed_sample <- bed_sample[,-5]			
-		} else {
-			prefix_rest <- prefix_master[which(prefix_master != prefix_master[i])]
-			if (length(prefix_rest) > 1) {
-				rest_B_mat <- compartment_score[,1:3]
-				rest_B_mat[,"sample2"] <- apply(compartment_score[,c(prefix_rest)], 1, max)
-			} else {
-				rest_B_mat <- compartment_score[,c("chr","start","end",prefix_rest)]
-				colnames(rest_B_mat)[4] <- "sample2"
-			}
-			bed_sample[,"sample2"] <- rest_B_mat[rownames(bed_sample),"sample2"]
-			bed_sample <- bed_sample[bed_sample$sample > bed_sample$sample2,]
-			bed_sample <- bed_sample[,-c(5,6)]
-		}
-		bed_sample <- na.omit(bed_sample)
-		bed_sample[,"id"] <- paste0(bed_sample$chr,"_",bed_sample$start)
-		bed_sample[,"significance"] <- 0
-		for(j in 1:nrow(bed_sample)) {
-			if (bed_sample$region[j] == "interactor") {
-				significance <- fithic[(fithic$id1 == bed_sample$id[j] | fithic$id2 == bed_sample$id[j]),]
-				if (nrow(significance) > 0) {
-					bed_sample$significance[j] <- max(significance[,prefix_master[i]])
+		if (region == "anchor") {
+			for(i in 1:length(prefix_master)) {
+				cmd <- paste0("bedtools intersect -a ",folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph -b ",folder,"/refgene.bed -wb |awk '{print $NF}' |sort |uniq")
+				gene_list <- system(cmd, wait=T, intern=T)
+				gene_list <- paste0("\"",gene_list,"\"",collapse=",")
+				cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Symbols\":[",gene_list,"]}' https://toppgene.cchmc.org/API/lookup > ",folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"))
+				system(paste0("chmod 755 ",folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
+				system(paste0("./",folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
+
+				print (paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
+				converted_genes <- rjson::fromJSON(file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
+				gene_list_tmp <- unique(as.character(unlist(converted_genes)[which(names(unlist(converted_genes)) == "Genes.Entrez")]))
+				gene_list <- paste0(gene_list_tmp,collapse=",")
+				cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Genes\":[",gene_list,"]}' https://toppgene.cchmc.org/API/enrich > ",folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json"), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"))
+				system(paste0("chmod 755 ",folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
+				system(paste0("./",folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
+
+				if (file.size(paste0(folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json")) > 110) {
+					enrich_list   <- list()
+					enrich_result <- rjson::fromJSON(file = paste0(folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json"))
+					terms_enrched <- length(do.call(c,enrich_result))
+					for(j in 1:terms_enrched) {
+						enrich_list[[j]] <- as.data.frame(do.call(cbind,do.call(c,enrich_result)[[j]]))[1,1:11]
+						enrich_list[[j]][,"Genes"] <- paste0(unlist(do.call(cbind,do.call(c,enrich_result)[[j]]$Genes)[2,]), collapse=",")
+					}
+					enrich_list <- do.call(rbind, enrich_list)
+					enrich_list <- as.data.frame(enrich_list)
+					enrich_list <- enrich_list[enrich_list$QValueFDRBH < 0.05,]
+					write.table(apply(enrich_list,2,as.character), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneEnrichment.",region,".txt"), row.names=F, col.names=T, sep="\t", quote=F)
+					write.table(gene_list_tmp, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+				} else {
+					cat("There are way to many genes overlapping with the A compartment, the command line option has return an error!\nPlease mannually upload the gene list.")
+					write.table(gene_list_tmp, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
 				}
 			}
 		}
-		bed_sample <- bed_sample[(bed_sample$significance == 1 & bed_sample$region == "interactor") | (bed_sample$significance == 0 & bed_sample$region == "anchor"), ]
-		if (region != "both") {
-			bed_sample <- bed_sample[bed_sample$region==region,]
-		}
-		bed_sample <- cbind(bed_sample,compartment_score[rownames(bed_sample),c(prefix_master)])
-		write.table(bed_sample, file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/differential.intra_compartmentLoops.details.txt"), row.names=F, col.names=T, sep="\t", quote=F)
-		write.table(bed_sample[,1:3], file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/differential.intra_compartmentLoops.bed"), row.names=F, col.names=F, sep="\t", quote=F)
+	} 
 
-		cmd <- paste0("bedtools intersect -a DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/differential.intra_compartmentLoops.bed -b DifferentialResult/",diffdir,"/geneEnrichment/refgene.bed -wb |awk '{print $NF}' |sort |uniq")
-		gene_list <- system(cmd, wait=T, intern=T)
-		gene_list <- paste0("\"",gene_list,"\"",collapse=",")
-		cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Symbols\":[",gene_list,"]}' https://toppgene.cchmc.org/API/lookup > DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup_result.json"), file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup.sh"))
-		system(paste0("chmod 755 DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
-		system(paste0("./DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
-
-		print (paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
-		converted_genes <- rjson::fromJSON(file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
-		gene_list_tmp <- unique(as.character(unlist(converted_genes)[which(names(unlist(converted_genes)) == "Genes.Entrez")]))
-		gene_list <- paste0(gene_list_tmp,collapse=",")
-		cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Genes\":[",gene_list,"]}' https://toppgene.cchmc.org/API/enrich > DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/gene_enrich.json"), file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/enrich.sh"))
-		system(paste0("chmod 755 DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
-		system(paste0("./DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
-
-		if (file.size(paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/gene_enrich.json")) > 110) {
-			enrich_list   <- list()
-			enrich_result <- rjson::fromJSON(file = paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/gene_enrich.json"))
-			terms_enrched <- length(do.call(c,enrich_result))
-			for(j in 1:terms_enrched) {
-				enrich_list[[j]] <- as.data.frame(do.call(cbind,do.call(c,enrich_result)[[j]]))[1,1:11]
-				enrich_list[[j]][,"Genes"] <- paste0(unlist(do.call(cbind,do.call(c,enrich_result)[[j]]$Genes)[2,]), collapse=",")
-			}
-			enrich_list <- do.call(rbind, enrich_list)
-			enrich_list <- as.data.frame(enrich_list)
-			enrich_list <- enrich_list[enrich_list$QValueFDRBH < 0.05,]
-			write.table(apply(enrich_list,2,as.character), file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneEnrichment.",region,".txt"), row.names=F, col.names=T, sep="\t", quote=F)
-			write.table(gene_list_tmp, file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+	if (region == "interactor" | region == "both") {
+		if (interaction == "inter") {
+			stop ("Function enrichment of interactor region is not possible for inter compartments differential loops\n")
 		} else {
-			cat("There are way to many genes overlapping with the A compartment, the command line option has return an error!\nPlease mannually upload the gene list.")
-			write.table(gene_list_tmp, file=paste0("DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+			bedpe <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.intra_compartmentLoops.bedpe"), h=T, as.is=T)
+			bedpe <- bedpe[order(bedpe$chr1, bedpe$start1),]
+			bedpe[,"id1"] <- paste0(bedpe$chr1,"_",bedpe$start1)
+			bedpe[,"id2"] <- paste0(bedpe$chr2,"_",bedpe$start2)
+		
+			for(i in 1:length(prefix_master)) {
+				compartment_score_sample <- compartment_score[,c("chr","start","end",prefix_master[i],"padj")]
+				diff_compartments_sample <- read.table(paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), h=F, as.is=T)
+				colnames(diff_compartments_sample) <- c("chr","start","end")
+				rownames(diff_compartments_sample) <- paste0(diff_compartments_sample$chr,"_",diff_compartments_sample$start)
+				bedpe[,c("pcscore1","padj1")] <- na.omit(compartment_score_sample[as.character(bedpe$id1),c(4,5)])
+				bedpe[,c("pcscore2","padj2")] <- na.omit(compartment_score_sample[as.character(bedpe$id2),c(4,5)])
+				bedpe[,"class1"] <- "no"
+				bedpe[,"class2"] <- "no"
+				bedpe[bedpe$padj1 < fdr_thr, "class1"] <- "yes"
+				bedpe[bedpe$padj2 < fdr_thr, "class2"] <- "yes"
+				bedpe <- bedpe[(bedpe$class1 == "yes" & bedpe$class2 == "no") | (bedpe$class1 == "no" & bedpe$class2 == "yes"),]
+				k <- 0
+				bedpe_filt <- list()
+				for(j in 1:nrow(bedpe)) {
+					if (bedpe$class1[j] == "yes") {
+						id <- bedpe$id1[j]
+					} else if (bedpe$class2[j] == "yes") {
+						id <- bedpe$id2[j]
+					}
+					if (length(which(id == rownames(diff_compartments_sample))) == 1) {
+						k <- k + 1
+						bedpe_filt[[k]] <- bedpe[j,]
+					}
+				}
+				bedpe_filt <- do.call(rbind, bedpe_filt)
+				bed_collapse_A <- data.frame(chr=c(bedpe_filt$chr1,bedpe_filt$chr2), start=c(bedpe_filt$start1,bedpe_filt$start2), end=c(bedpe_filt$end1,bedpe_filt$end2), pcscore=c(bedpe_filt$pcscore1,bedpe_filt$pcscore2), class=c(bedpe_filt$class1,bedpe_filt$class2)) 
+				bed_collapse_A <- bed_collapse_A[bed_collapse_A$class == "no",]
+				bed_collapse_A <- unique(bed_collapse_A[bed_collapse_A$pcscore > 0,])
+				write.table(bed_collapse_A[,1:3], file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments_interactor.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
+			}
+
+			if (region == "interactor") {
+				for(i in 1:length(prefix_master)) {
+					cmd <- paste0("bedtools intersect -a ",folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments_interactor.bedGraph -b ",folder,"/refgene.bed -wb |awk '{print $NF}' |sort |uniq")
+					gene_list <- system(cmd, wait=T, intern=T)
+					gene_list <- paste0("\"",gene_list,"\"",collapse=",")
+					cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Symbols\":[",gene_list,"]}' https://toppgene.cchmc.org/API/lookup > ",folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"))
+					system(paste0("chmod 755 DifferentialResult/",diffdir,"/geneEnrichment/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
+					system(paste0("./",folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
+
+					print (paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
+					converted_genes <- rjson::fromJSON(file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
+					gene_list_tmp <- unique(as.character(unlist(converted_genes)[which(names(unlist(converted_genes)) == "Genes.Entrez")]))
+					gene_list <- paste0(gene_list_tmp,collapse=",")
+					cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Genes\":[",gene_list,"]}' https://toppgene.cchmc.org/API/enrich > ",folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json"), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"))
+					system(paste0("chmod 755 ",folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
+					system(paste0("./",folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
+
+					if (file.size(paste0(folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json")) > 110) {
+						enrich_list   <- list()
+						enrich_result <- rjson::fromJSON(file = paste0(folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json"))
+						terms_enrched <- length(do.call(c,enrich_result))
+						for(j in 1:terms_enrched) {
+							enrich_list[[j]] <- as.data.frame(do.call(cbind,do.call(c,enrich_result)[[j]]))[1,1:11]
+							enrich_list[[j]][,"Genes"] <- paste0(unlist(do.call(cbind,do.call(c,enrich_result)[[j]]$Genes)[2,]), collapse=",")
+						}
+						enrich_list <- do.call(rbind, enrich_list)
+						enrich_list <- as.data.frame(enrich_list)
+						enrich_list <- enrich_list[enrich_list$QValueFDRBH < 0.05,]
+						write.table(apply(enrich_list,2,as.character), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneEnrichment.",region,".txt"), row.names=F, col.names=T, sep="\t", quote=F)
+						write.table(gene_list_tmp, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+					} else {
+						cat("There are way to many genes overlapping with the A compartment, the command line option has return an error!\nPlease mannually upload the gene list.")
+						write.table(gene_list_tmp, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+					}
+				}
+			}
+
+			if (region == "both") {
+				for(i in 1:length(prefix_master)) {
+					diff_compartment_sample <- read.table(paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), h=F, as.is=T)
+					diff_interactors_sample <- read.table(paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments_interactor.bedGraph"), h=F, as.is=T)
+					colnames(diff_compartment_sample) <- c("chr","start","end")
+					colnames(diff_interactors_sample) <- c("chr","start","end")
+					diff_both <- as.data.frame(rbind(diff_compartment_sample, diff_interactors_sample))
+					diff_both <- diff_both[order(diff_both$chr, diff_both$start),]
+					write.table(diff_both, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_both.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
+
+					cmd <- paste0("bedtools intersect -a ",folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_both.bedGraph -b ",folder,"/refgene.bed -wb |awk '{print $NF}' |sort |uniq")
+					gene_list <- system(cmd, wait=T, intern=T)
+					gene_list <- paste0("\"",gene_list,"\"",collapse=",")
+					cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Symbols\":[",gene_list,"]}' https://toppgene.cchmc.org/API/lookup > ",folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"))
+					system(paste0("chmod 755 ",folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
+					system(paste0("./",folder,"/",prefix_master[i],"_geneEnrichment/lookup.sh"), wait=T)
+
+					print (paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
+					converted_genes <- rjson::fromJSON(file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/lookup_result.json"))
+					gene_list_tmp <- unique(as.character(unlist(converted_genes)[which(names(unlist(converted_genes)) == "Genes.Entrez")]))
+					gene_list <- paste0(gene_list_tmp,collapse=",")
+					cat(paste0("#!/bin/sh\ncurl -H 'Content-Type: text/json' -d \'{\"Genes\":[",gene_list,"]}' https://toppgene.cchmc.org/API/enrich > ",folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json"), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"))
+					system(paste0("chmod 755 ",folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
+					system(paste0("./",folder,"/",prefix_master[i],"_geneEnrichment/enrich.sh"), wait=T)
+
+					if (file.size(paste0(folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json")) > 110) {
+						enrich_list   <- list()
+						enrich_result <- rjson::fromJSON(file = paste0(folder,"/",prefix_master[i],"_geneEnrichment/gene_enrich.json"))
+						terms_enrched <- length(do.call(c,enrich_result))
+						for(j in 1:terms_enrched) {
+							enrich_list[[j]] <- as.data.frame(do.call(cbind,do.call(c,enrich_result)[[j]]))[1,1:11]
+							enrich_list[[j]][,"Genes"] <- paste0(unlist(do.call(cbind,do.call(c,enrich_result)[[j]]$Genes)[2,]), collapse=",")
+						}
+						enrich_list <- do.call(rbind, enrich_list)
+						enrich_list <- as.data.frame(enrich_list)
+						enrich_list <- enrich_list[enrich_list$QValueFDRBH < 0.05,]
+						write.table(apply(enrich_list,2,as.character), file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneEnrichment.",region,".txt"), row.names=F, col.names=T, sep="\t", quote=F)
+						write.table(gene_list_tmp, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+					} else {
+						cat("There are way to many genes overlapping with the A compartment, the command line option has return an error!\nPlease mannually upload the gene list.")
+						write.table(gene_list_tmp, file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_geneList.",region,".txt"), row.names=F, col.names=F, sep="\t", quote=F)
+					}
+				}
+			}
 		}
 	}
 }
@@ -2425,7 +2587,7 @@ option_list = list(
  		Rscript ./dchicf.r --file input.txt --pcatype viz --diffdir conditionA_vs_conditionB --genome mm10 --pcgroup pcQnm
 
  		enrich  : Perform gene enrichment analysis [Gene set enrichment of differential genes/loops overlapping genes], e.g.
- 		Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm
+ 		Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm --interaction intra --pcscore F --compare F
  		\n"),
 
  	make_option(c("--ebackgrnd"), type="integer", default=2, help="Expected genomic background to calculate Observed/Expected ratio
@@ -2468,6 +2630,14 @@ option_list = list(
  		[default 2e6]\n"),
 
 	make_option(c("--exclA"), type="logical", default=TRUE, help="Setting this option to TRUE will allow dcHiC to search genes that are overlapping with differential-A regions in a sample and B in all others [default TRUE]\n"),
+
+	make_option(c("--pcscore"), type="logical", default=FALSE, help="Setting this option to TRUE will allow dcHiC to search genes that are overlapping with differential-A regions with higher pc score than rest of the samples [default FALSE]\n"),
+
+	make_option(c("--interaction"), type="character", default="intra", help="dcHiC can perform functional enrichment over both cis/intra and trans/inter compartments. This will allow the user to choose the compartment type [default intra]\n"),
+
+	make_option(c("--compare"), type="logical", default=F, help="dcHiC can perform functional enrichment between a pair of defined sample. Set this option to TRUE when user needs to compare function enrichment of A-compartment genes bwteen a pair instead all the samples [default FALSE]\n"),
+
+	make_option(c("--cells"), type="character", default="X,Y", help="When the compare argument is set to TRUE then dcHiC expects the name <prefix> of sample pairs provided in the input.txt file [example prefix1,prefix2]\n"),
 
 	make_option(c("--region"), type="character", default="both", help="dcHiC finds differential compartments (anchors) and then differential interactions (interactors) anchored in differential compartments
 		Setting this option to 'anchor' will only search genes overlapping with differential compartments. When set to 'interactors', the genes overlaping with the ineracting regions will be scanned
@@ -2522,8 +2692,12 @@ fithicpath <- as.character(opt$fithicpath)
 pythonpath <- as.character(opt$pythonpath)
 region 	   <- as.character(opt$region)
 pcgrp 	   <- as.character(opt$pcgroup)
+interaction<- as.character(opt$interaction)
+cells	   <- as.character(opt$cells)
 dirovwt    <- opt$dirovwt
 exclA      <- opt$exclA
+pcscore    <- opt$pcscore
+compare    <- opt$compare
 
 pc <- as.integer(opt$pc)
 
@@ -2610,7 +2784,12 @@ if (pcatype == "enrich") {
 		stop("Please provide a valid genome id")
 	} else {
 		cat ("Finding gene enrichment for ",prefix_master," samples\n")
-		geneEnrichment(data, diffdir, genome, exclA, region, pcgrp)
+		if (compare) {
+			if (cells == "X,Y") {
+				stop("Provide a valid sample name\n")
+			}
+		}
+		geneEnrichment(data, diffdir, genome, exclA, region, pcgrp, interaction, pcscore, compare, cells, fdr_thr)
 	}
 }
 
