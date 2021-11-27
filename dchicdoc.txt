@@ -47,7 +47,7 @@ Options:
 
 
 	--pcatype=PCATYPE
-		pcatype will allow a user to perform different types of step wise analysis on the Hi-C data. 
+		pcatype will allow a user to perform different types of step wise analyzis on the Hi-C data. 
  		Available options: cis/trans/select/analyze/subcomp/dloop/viz, for more details check the small description and example commands to run the analysis
  
 
@@ -126,9 +126,14 @@ Options:
  		[default 0.05]
 
 
-	--gscore=GSCORE
-		Glosh score threshold. Glosh score will help to remove lone differential compartments in the chromosome. A glosh score of 1 means it the differential compartments are highly clustered, while 0 means it is a lone region
- 		[default 0]
+	--distclust=DISTCLUST
+		Distance threshold for clustering close differential regions. This will help to remove lone differential compartments in the chromosome. A distclust value of 0 will cluster differential compartments that are adjacent to each other. The higher the value, the further apart the differential compartments are.
+ 		[default -1 i.e. no clustering of result]
+
+
+	--numberclust=NUMBERCLUST
+		Minimum number of clustered regions within the predefined distclust threshold (when it is set above default i.e. -1)
+ 		[default 1]
 
 
 	--subnum=SUBNUM
