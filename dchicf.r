@@ -2178,8 +2178,8 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 	}
 
 	# Inter IGV html file generation
-	if (file.exists(paste0(diffdir,"/fdr_result/differential.inter_sample_group.",pcgrp,"bedGraph"))) {
-		compartment_file <- read.table(paste0(diffdir,"/fdr_result/differential.inter_sample_group.",pcgrp,"bedGraph"), h=T, as.is=T)
+	if (file.exists(paste0(diffdir,"/fdr_result/differential.inter_sample_group.",pcgrp,".bedGraph"))) {
+		compartment_file <- read.table(paste0(diffdir,"/fdr_result/differential.inter_sample_group.",pcgrp,".bedGraph"), h=T, as.is=T)
 		compartment_file <- compartment_file[order(compartment_file$chr, compartment_file$start),c("chr","start","end",prefix_master,"replicate_wt","sample_maha","padj","dist_clust")]
 		print (head(compartment_file))
 		compartment_file$padj[compartment_file$padj == 0] <- min(compartment_file$padj[compartment_file$padj > 0])
