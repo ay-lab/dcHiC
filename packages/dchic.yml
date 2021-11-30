@@ -14,6 +14,7 @@ dependencies:
   - scikit-learn
   - scipy
   - sortedcontainers
+  - r-bench
   - r-bigreadr
   - r-bigstatsr
   - r-depmixs4
