@@ -20,3 +20,7 @@ Using `getcHiCinputfromExistingPCs.r`, anyone can reformat their existing pc val
 The first column is the path to the bedGraph file with PC information (4th column of the bedGraph file), the second column can have either 'intra' or 'inter' 
 (whether component calculations were done with intra-chromosomal or inter-chromosomal data). The third column is the replicate name, and the fourth column
 is the sample name. Replicate names and sample names should be different. 
+
+# Different File Support
+
+Coming soon.
