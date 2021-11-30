@@ -8,7 +8,7 @@ dcHiC is a tool for differential compartment analysis of Hi-C datasets. This lat
 Now, however, it also has the following improvements and new functions: 
 
 - Option to perform compartment computations on intra-chromosomal (cis) and inter-chromosomal (trans) Hi-C counts
-- Optimized PCA calculations (capable of analysis up to 5kb resolution)
+- Optimized PCA calculations (faster + capable of analysis up to 5kb resolution)
 - HMM subcompartment identification based on compartment values
 - Identification of differential loops anchored in significant differential compartments (using [Fit-Hi-C](https://github.com/ay-lab/fithic))
 
@@ -47,6 +47,7 @@ To install the dependencies manually, ensure that you have the following package
 ### Packages in R
 - Rcpp
 - optparse
+- bench
 - bigstatsr
 - bigreadr
 - limma (bioconductor)
@@ -197,7 +198,7 @@ dcHiC_dir
 There are a few technical implementation items to note: 
 
 1) Quantile Normalization. Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
-2) Glosh score. Stray differential compartments (lone variable bins) can affect comparisons. The 'glosh score' is a measure from 0 to 1 of how clustered the differential compartments are (0 = very isolatd; 1 is completely clustered); by default, dcHiC filters no lone compartments. We have found a glosh score of 0.7 to work as a good stringent filtering criterion.
+2) Compartment clustering. Due to statistical noise, edge cases, and other factors, lone differential compartments occassionally crop up (ex: one bin is "significant" but all of its neighbors are not). These may be significant if analyzing at coarse resolution, but can also be misleading, especially if analyzing at very fine resolution. By default, dcHiC does not filter any of these lone compartments; however, there are two parameters to do so: *distclust* is the distance threshold for close differential regions to be a "cluster." If it's 0, only adjacent differential compartments form a cluster. If it's 1, differential compartments separated by up to 1 bin are a cluster. The other parameter is *numberclust*, which is a filter for the minimum number of significant bins within a cluster. 
 
 ## Contact
 
