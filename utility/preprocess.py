@@ -25,6 +25,8 @@ results = parser.parse_args()
 scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
 res = int(results.res)
 
+# Extract chromosome size info
+
 chrs = []
 sizes = []
 chrSizes = {}
@@ -38,11 +40,13 @@ with open(results.genomeSize, "r") as chrinput: # May need to change this to "rb
 
 matrixArr = []
 filename, file_extension = os.path.splitext(results.file)
-    
-print("Creating sparse matrix............")
+
+# Set output names
+
 outname = results.prefix + "_" + results.res + ".matrix"
 extension = os.path.splitext(results.file)[1]
 filename = ""
+tmpfile = "tmp"
 if extension == ".mcool":
     filename = results.file + "::/resolutions/" + results.res 
 elif extension == ".cool":
@@ -50,13 +54,26 @@ elif extension == ".cool":
 else:
     print("Extension is neither .cool or .mcool. Please make sure it is one of these two.")
 
-cmd = "cooler dump -o " + outname + " " + filename 
+# Run cooler dump
+
+print("Creating sparse matrix............")
+cmd = "cooler dump -o " + tmpfile + " " + filename # cooler CLI one-index features don't work
 print(cmd)
 os.system(cmd)
+
+# Make one-indexed 
+
+with open(tmpfile, "r") as tmpIn:
+    with open(outname, "w") as fileOut:
+        for line in tmpIn:
+            l = line.strip().split()
+            fileOut.write(str(int(l[0])+1) + "\t" + str(int(l[1])+1) + "\t" + l[2] + "\n")
 
 name = results.prefix + "_" + str(results.res) + "_abs.bed" #data_200000_abs.bed
 iterator = 1 # one-based
     
+# Make bed files
+
 with open(name, "w") as bedfile:
     print("Creating bed file.............")
     for a in range(len(chrs)):
@@ -69,5 +86,4 @@ with open(name, "w") as bedfile:
         if (posIterator-res) < length:
             bedfile.write(chrs[a] + "\t" + (str(posIterator-res)) + "\t" + str(length) + "\t" + str(iterator) + "\n")
             iterator +=1
-    
     
