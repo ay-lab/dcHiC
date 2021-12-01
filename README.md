@@ -136,8 +136,8 @@ To see the full list of run options with examples of run code for each one, run 
 | --------------------- | ----------------------- |
 | **cis**                | Find compartments on a cis interaction matrix
 | **trans**                | Find compartments on a trans interaction matrix
-| **select**                | Selection of best PC for downstream analysis [Must after cis or trans step]
-| **analyze**                | Perform differential analysis on selected PC's [Must after select step]
+| **select**                | Selection of best PC for downstream analysis [Must be after cis or trans step]
+| **analyze**                | Perform differential analysis on selected PC's [Must be after select step]
 | **subcomp**                | Optional: Assigning sub-compartments based on PC magnitude values using HMM segmentation 
 | **fithic**         | Run [Fit-Hi-C](https://github.com/ay-lab/fithic) to identify loops before running dloop (Optional but recommended)
 | **dloop**             | Find differential loops anchored in at least one of the differential compartments across the samples (Optional but recommended)
@@ -155,7 +155,7 @@ Rscript dchicf.r --file input.ES_NPC.txt --pcatype fithic --dirovwt T --diffdir 
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype dloop --dirovwt T --diffdir ES_vs_NPC_100Kb
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype subcomp --dirovwt T --diffdir ES_vs_NPC_100Kb
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype viz --diffdir ES_vs_NPC_100Kb --genome mm10 
-Rscript ./dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm --interaction intra --pcscore F --compare F
+Rscript dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm --interaction intra --pcscore F --compare F
 ```
 
 ## Output
@@ -195,14 +195,17 @@ dcHiC_dir
 
 ## Technical Specifications
 
-There are a few technical implementation items to note: 
+There are a few technical implementation items to note:
 
-1) Quantile Normalization. Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
-2) Compartment clustering. Due to statistical noise, edge cases, and other factors, lone differential compartments occassionally crop up (ex: one bin is "significant" but all of its neighbors are not). These may be significant if analyzing at coarse resolution, but can also be misleading, especially if analyzing at very fine resolution. By default, dcHiC does not filter any of these lone compartments; however, there are two parameters to do so: *distclust* is the distance threshold for close differential regions to be a "cluster." If it's 0, only adjacent differential compartments form a cluster. If it's 1, differential compartments separated by up to 1 bin are a cluster. The other parameter is *numberclust*, which is a filter for the minimum number of significant bins within a cluster. 
+**Support for other genomes:** While it has only been extensively tested for human and mouse genomes, dcHiC supports most other commonly-used genomes that are under the UCSC [genome page](https://genome.ucsc.edu/cgi-bin/hgGateway). To utilize this, create a folder *{genome}_{resolution}_goldenpathData*. Within that folder put three files: a) {genome}.fa b) {genome}.tss.bed & c) {genome}.chrom.sizes files. These files can be found under the UCSC bigZips page for the specified genome. When running dcHiC use the `--gfolder` option to provide the folder path, and dcHiC will create the necessary files. 
+ 
+**Compartment clustering:** Due to statistical noise, edge cases, and other factors, lone differential compartments occassionally crop up (ex: one bin is "significant" but all of its neighbors are not). These may be significant if analyzing at coarse resolution, but can also be misleading, especially if analyzing at very fine resolution. By default, dcHiC does not filter any of these lone compartments; however, there are two parameters to do so: *distclust* is the distance threshold for close differential regions to be a "cluster." If it's 0, only adjacent differential compartments form a cluster. If it's 1, differential compartments separated by up to 1 bin are a cluster. The other parameter is *numberclust*, which is a filter for the minimum number of significant bins within a cluster. 
+
+**Quantile Normalization:** Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
 
 ## Contact
 
-For help with installation, technical issues, interpretation, or other details, contact: 
+For help with installation, technical issues, interpretation, or other details, feel free to raise an issue or contact us: 
 
 Jeffrey Wang (jeffreywang@lji.org), Abhijit Chakraborty (abhijit@lji.org), Ferhat Ay (ferhatay@lji.org)
 
