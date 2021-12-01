@@ -670,17 +670,21 @@ pcselect <- function(data, genome, pc, diroverwrite, folder=NA) {
 	if (is.na(folder)) {
     	folder <- paste0(genome,"_",as.integer(resolution),"_goldenpathData")
     	if (!file.exists(folder)) {
-    	 		dir.create(folder)
+    	 	dir.create(folder)
+		current_path <- getwd()
+        	setwd(folder)
+        	datadownload(genome)
+        	setwd(current_path)
     	}
     	folder <- normalizePath(folder)
   	} else {
     	folder <- normalizePath(folder)
   	}
 
-  	current_path <- getwd()
-	setwd(folder)
-	datadownload(genome)
-  	setwd(current_path)
+  	#current_path <- getwd()
+	#setwd(folder)
+	#datadownload(genome)
+  	#setwd(current_path)
 
  	if (!file.exists(paste0(folder,"/",genome,".fa"))) {
    		cat ("Unzipping ",paste0(folder,"/",genome,".fa.gz"),"\n")
@@ -2638,8 +2642,11 @@ option_list = list(
  	make_option(c("--rowmrge"), type="integer", default=10000, help="This is the number of consecutive rows to be merged in the trans matrix file and add the column count values to reduce the overall size 
  		[rows=trans bins, cols=cis bins, default=10,000]\n"),
  	
- 	make_option(c("--genome"), type="character", default=NA, help="Genome name, e.g. hg38/hg19/mm10/mm9 
+ 	make_option(c("--genome"), type="character", default=NA, help="Genome name, e.g. hg38/hg19/mm10/mm9/[custom]
  		[default NONE, should be provided by the user]\n"),
+
+	make_option(c("--gfolder"), type="character", default=NA, help="Genome folder path, e.g. <genome>_<resolution>_goldenpathData folder (This folder should contain three files - <genome>.fa, <genome>.tss.bed and <genome>.chrom.sizes files) 
+                [default NA]\n"),
 
  	make_option(c("--bdgfile"), type="character", default=NA, help="Additional bedGraph files to be visualized in the html file. Optional for viz step. This is a single three column txt file\n
   		<path to bedGraph>\t<name>\t<type>\t<pos color:neg color>\n
@@ -2731,6 +2738,7 @@ dist_thr   <- as.integer(opt$maxd)
 distclust  <- as.integer(opt$distclust)
 numberclust<- as.integer(opt$numberclust)
 bdgfile    <- as.character(opt$bdgfile)
+gfolder	   <- as.character(opt$gfolder)
 fithicpath <- as.character(opt$fithicpath)
 pythonpath <- as.character(opt$pythonpath)
 region 	   <- as.character(opt$region)
@@ -2773,7 +2781,7 @@ if (pcatype == "select") {
 	if(is.na(genome)) {
 		stop("Please provide a valid genome id")
 	} else {
-		pcselect(data, genome, pc, dirovwt)
+		pcselect(data, genome, pc, dirovwt, gfolder)
 	}
 }
 
