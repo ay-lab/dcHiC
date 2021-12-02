@@ -2184,7 +2184,7 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 	# Inter IGV html file generation
 	if (file.exists(paste0(diffdir,"/fdr_result/differential.inter_sample_group.",pcgrp,".bedGraph"))) {
 		compartment_file <- read.table(paste0(diffdir,"/fdr_result/differential.inter_sample_group.",pcgrp,".bedGraph"), h=T, as.is=T)
-		compartment_file <- compartment_file[order(compartment_file$chr, compartment_file$start),c("chr","start","end",prefix_master,"replicate_wt","sample_maha","padj","dist_clust")]
+		compartment_file <- compartment_file[order(compartment_file$chr, compartment_file$start),c("chr","start","end",prefix_master,"sample_maha","padj","dist_clust")]
 		print (head(compartment_file))
 		compartment_file$padj[compartment_file$padj == 0] <- min(compartment_file$padj[compartment_file$padj > 0])
 		compartment_file$padj <- -log10(compartment_file$padj)
@@ -2298,6 +2298,10 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
 		}
 	}
 
+	if (exclA == FALSE & pcgrp == "pcQnm") {
+		pcgrp <- "pcOri"
+		cat ("exclA is set to False, changing pcgroup from pcQnm to pcOri\n")
+	}
 	compartment_score <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.",pcgrp,".bedGraph"), h=T, as.is=T)
 	diff_compartments <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.Filtered.",pcgrp,".bedGraph"), h=T, as.is=T)
 	rownames(compartment_score) <- paste0(compartment_score$chr,"_",compartment_score$start)
@@ -2455,13 +2459,31 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
 				diff_compartments_sample <- read.table(paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), h=F, as.is=T)
 				colnames(diff_compartments_sample) <- c("chr","start","end")
 				rownames(diff_compartments_sample) <- paste0(diff_compartments_sample$chr,"_",diff_compartments_sample$start)
-				bedpe[,c("pcscore1","padj1")] <- na.omit(compartment_score_sample[as.character(bedpe$id1),c(4,5)])
-				bedpe[,c("pcscore2","padj2")] <- na.omit(compartment_score_sample[as.character(bedpe$id2),c(4,5)])
+				
+				pcscore1 <- c(as.numeric((compartment_score_sample[unique(as.character(bedpe$id1)),c(4)])))
+				pcscore2 <- c(as.numeric((compartment_score_sample[unique(as.character(bedpe$id2)),c(4)])))
+				padj1    <- c(as.numeric((compartment_score_sample[unique(as.character(bedpe$id1)),c(5)])))
+				padj2    <- c(as.numeric((compartment_score_sample[unique(as.character(bedpe$id2)),c(5)])))
+				pcscore1[is.na(pcscore1)] <- 0
+				pcscore2[is.na(pcscore2)] <- 0
+				padj1[is.na(padj1)] <- 1
+				padj2[is.na(padj2)] <- 1
+			
+				names(pcscore1) <- unique(as.character(bedpe$id1))
+				names(pcscore2) <- unique(as.character(bedpe$id2))
+				names(padj1)    <- unique(as.character(bedpe$id1))
+				names(padj2)    <- unique(as.character(bedpe$id2))
+
+				bedpe[,"pcscore1"] <- as.vector(pcscore1[as.character(bedpe$id1)])
+				bedpe[,"padj1"]    <- as.vector(padj1[as.character(bedpe$id1)])
+				bedpe[,"pcscore2"] <- as.vector(pcscore2[as.character(bedpe$id2)])
+				bedpe[,"padj2"]    <- as.vector(padj2[as.character(bedpe$id2)])
 				bedpe[,"class1"] <- "no"
 				bedpe[,"class2"] <- "no"
 				bedpe[bedpe$padj1 < fdr_thr, "class1"] <- "yes"
 				bedpe[bedpe$padj2 < fdr_thr, "class2"] <- "yes"
 				bedpe <- bedpe[(bedpe$class1 == "yes" & bedpe$class2 == "no") | (bedpe$class1 == "no" & bedpe$class2 == "yes"),]
+			
 				k <- 0
 				bedpe_filt <- list()
 				for(j in 1:nrow(bedpe)) {
@@ -2642,7 +2664,7 @@ option_list = list(
  	make_option(c("--rowmrge"), type="integer", default=10000, help="This is the number of consecutive rows to be merged in the trans matrix file and add the column count values to reduce the overall size 
  		[rows=trans bins, cols=cis bins, default=10,000]\n"),
  	
- 	make_option(c("--genome"), type="character", default=NA, help="Genome name, e.g. hg38/hg19/mm10/mm9/[custom]
+ 	make_option(c("--genome"), type="character", default=NA, help="Genome name, e.g. hg38/hg19/mm10/mm9 
  		[default NONE, should be provided by the user]\n"),
 
 	make_option(c("--gfolder"), type="character", default=NA, help="Genome folder path, e.g. <genome>_<resolution>_goldenpathData folder (This folder should contain three files - <genome>.fa, <genome>.tss.bed and <genome>.chrom.sizes files) 
