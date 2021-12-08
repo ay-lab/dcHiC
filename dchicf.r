@@ -2258,6 +2258,42 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 						)
 			}
 		}
+		
+		if (!is.na(bdgfile)) {
+			bdgfile <- read.table(bdgfile, h=F, as.is=T)
+			colnames(bdgfile) <- c("file", "name", "type", "color")
+			for(b in 1:nrow(bdgfile)) {
+				if (bdgfile$type[b] == "bedGraph") {
+					cmd <- paste0("cp ",bdgfile$file[b]," ",diffdir,"/viz/files/")
+					system(cmd, wait=T)
+					file[[length(file)+1]] <- data.frame(
+							file=paste0("./files/",basename(bdgfile$file[b])),
+							name=bdgfile$name[b],
+							group="bedGraph",
+							color=bdgfile$color[b]
+					)
+				} else if (bdgfile$type[b] == "bedInt") {
+					cmd <- paste0("cp ",bdgfile$file[b]," ",diffdir,"/viz/files/")
+					system(cmd, wait=T)
+					file[[length(file)+1]] <- data.frame(
+							file=paste0("./files/",basename(bdgfile$file[b])),
+							name="DifferentialLoops_Additional",
+							group="bedInt",
+							color="0:0"
+					)
+				}
+				else if (bdgfile$type[b] == "seg") {
+					cmd <- paste0("cp ",bdgfile$file[b]," ",diffdir,"/viz/files/")
+					system(cmd, wait=T)
+					file[[length(file)+1]] <- data.frame(
+							file=paste0("./files/",basename(bdgfile$file[b])),
+							name="Segment_Additional",
+							group="seg",
+							color="0:0"
+					)
+				}
+			}
+		}
 		file <- as.data.frame(do.call(rbind, file), stringsAsFactors=F)
 		print (file)
 
