@@ -203,6 +203,8 @@ There are a few technical implementation items to note:
 
 **Quantile Normalization:** Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
 
+**Running files**: If you are running into issues, removing chrM may help. 
+
 ## Contact
 
 For help with installation, technical issues, interpretation, or other details, feel free to raise an issue or contact us: 
