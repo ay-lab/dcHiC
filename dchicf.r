@@ -1114,7 +1114,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 					intra_res <- calchclust(intra_res, fdr.thr, hclust_dist=distclust)
 				} else if (distclust == -1) {
 					#intra_res[,"glosh"] <- 1
-					intra_res[,"dist_clust"] <- 2
+					intra_res[,"dist_clust"] <- 1
 					rownames(intra_res) <- paste0(intra_res$chr,"_",intra_res$start)
 				}
 
@@ -1123,7 +1123,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 
 				if (fdr.thr > 0) {
 					#write.table(intra_res[intra_res$padj < fdr.thr & intra_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
-					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust > numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
+					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
 				intra_res <- intra_res[,-c(which(colnames(intra_res) %in% data$prefix))]
@@ -1132,7 +1132,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 
 				if (fdr.thr > 0) {
 					#write.table(intra_res[intra_res$padj < fdr.thr & intra_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
-					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust > numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
+					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
 				grp_pcOri <- as.data.frame(do.call(rbind, grp_pcOri))
@@ -1142,7 +1142,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 
 				if (fdr.thr > 0) {
 					#write.table(intra_res[intra_res$padj < fdr.thr & intra_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
-					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust > numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
+					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 			}
 		}
@@ -1231,7 +1231,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 					inter_res <- calchclust(inter_res, fdr.thr, hclust_dist=distclust)
 				} else if (distclust == -1) {
 					#inter_res[,"glosh"] <- 1
-					inter_res[,"dist_clust"] <- 2 
+					inter_res[,"dist_clust"] <- 1 
 					rownames(inter_res) <- paste0(inter_res$chr,"_",inter_res$start)
 				}
 
@@ -1240,7 +1240,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 
 				if (fdr.thr > 0) {
 					#write.table(inter_res[inter_res$padj < fdr.thr & inter_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
-					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust > numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
+					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
 				inter_res <- inter_res[,-c(which(colnames(inter_res) %in% data$prefix))]
@@ -1249,7 +1249,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 
 				if (fdr.thr > 0) {
 					#write.table(inter_res[inter_res$padj < fdr.thr & inter_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
-					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust > numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
+					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
 				grp_pcOri <- as.data.frame(do.call(rbind, grp_pcOri))
@@ -1259,7 +1259,7 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 
 				if (fdr.thr > 0) {
 					#write.table(inter_res[inter_res$padj < fdr.thr & inter_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
-					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust > numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
+					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 			}
 		}
