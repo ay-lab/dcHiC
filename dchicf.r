@@ -1,3 +1,4 @@
+set.seed(123)
 #libraries required
 library(bigstatsr)
 library(Rcpp)
