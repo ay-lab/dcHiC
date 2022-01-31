@@ -2726,7 +2726,7 @@ option_list = list(
  		[default 0.05]\n"),
 
  	make_option(c("--distclust"), type="numeric", default=-1, help="Distance threshold for clustering close differential regions. This will help to remove lone differential compartments in the chromosome. A distclust value of 0 will cluster differential compartments that are adjacent to each other. Higher the value further apart the differential compartments are
- 		[default -1 i.e. no clustering of result]\n"),
+ 		[default -1 i.e. no clustering of result. Provide the value in basepairs]\n"),
 
  	make_option(c("--numberclust"), type="numeric", default=1, help="Minimum number of clustered regions within the predefined distclust threshold (when it is set above default i.e. -1)
  		[default 1]\n"),
