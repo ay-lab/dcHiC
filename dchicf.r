@@ -1471,12 +1471,21 @@ callfithiC <- function(x, fithic_path, python_path, resolution, df, diff_dir, u,
 
 	prefix <- as.character(df$prefix[x])
 	folder <- paste0(diff_dir,"/fithic_run/",prefix,"_fithic")
-	cmd <- paste0(python_path," ",fithic_path," -i ",folder,"/interactions.txt.gz -f ",folder,"/fragments.txt.gz -U ",as.integer(u)," -o ",folder,"/fithic_result -r ",as.integer(resolution))
-	if (!file.exists(paste0(folder,"/fithic_result/FitHiC.spline_pass1.res",as.integer(resolution),".significances.txt.gz")) | dir_ovwt == TRUE) {
-		cat (cmd,"\n")
-		system(cmd, wait=T)
+	if (!dir.exists("biases")) {
+		cat ("Fithic requires a bias file. Please check the link for more details\nhttps://github.com/ay-lab/fithic\n")
+		cat ("Please generate the bias files for each sample provided in the input.txt file\n")
+		cat ("Create an additional folder 'biases' under current path and dump all the *.biases.gz files inside it\n")
+		cat ("Rerun the step again\n")
+		stop("Exit!")
 	} else {
-		cat(paste0(folder,"/fithic_result/FitHiC.spline_pass1.res",as.integer(resolution),".significances.txt.gz file exists!\n"))	
+		bias<- normalizePath(paste0("biases/",prefix,".biases.gz"))
+		cmd <- paste0(python_path," ",fithic_path," -i ",folder,"/interactions.txt.gz -f ",folder,"/fragments.txt.gz -t ",bias," -U ",as.integer(u)," -o ",folder,"/fithic_result -r ",as.integer(resolution))
+		if (!file.exists(paste0(folder,"/fithic_result/FitHiC.spline_pass1.res",as.integer(resolution),".significances.txt.gz")) | dir_ovwt == TRUE) {
+			cat (cmd,"\n")
+			system(cmd, wait=T)
+		} else {
+			cat(paste0(folder,"/fithic_result/FitHiC.spline_pass1.res",as.integer(resolution),".significances.txt.gz file exists!\n"))	
+		}
 	}
 }
 
