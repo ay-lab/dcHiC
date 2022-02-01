@@ -1851,7 +1851,7 @@ track name=\"",colnames(compbdg)[j]," PC\" description=\"BedGraph format\" visib
 track name=\"log10Padj\" description=\"BedGraph format\" visibility=full color=0,153,0 priority=20 plotType=\"points\"\n",
 			file=paste0(folder,"/data/differential_compartment.log10Padj.bedGraph"))    
 
-			compbdg_tmp <- compbdg[compbdg$padj > -log10(fdr_thr) & compbdg$dist_clust > numberclust,]
+			compbdg_tmp <- compbdg[compbdg$padj > -log10(fdr_thr) & compbdg$dist_clust >= numberclust,]
      		write.table(compbdg_tmp[,c(1:3,(ncol(compbdg_tmp)-1))], file=paste0(folder,"/data/differential_compartment.log10Padj.bedGraph"), row.names=F, col.names=F,sep="\t", quote=F, append=T)
      		R.utils::gzip(paste0(folder,"/data/differential_compartment.log10Padj.bedGraph"), paste0(folder,"/data/differential_compartment.log10Padj.bedGraph.gz"), overwrite=T)
      		cmd <- paste0("create_datauri ",folder,"/data/differential_compartment.log10Padj.bedGraph.gz")
