@@ -221,7 +221,6 @@ ijk2matfunc_cis <- function(i, chr, path, pc_k = 3, pc_ncores) {
 	} else if (ncol(bed) == 5) {
 		colnames(bed) <- c("chr","start","end","index","blacklist")
 		remove <- which(apply(mat, 1, sum) < 3)
-   		bed[,"blacklist"] <- 0
    		bed[remove,"blacklist"] <- 1
 	}
    	bin <- nrow(bed)
@@ -316,7 +315,7 @@ ijk2matfunc_cis <- function(i, chr, path, pc_k = 3, pc_ncores) {
 }
 
 #Read the files and create cis O/E files
-readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite=FALSE) {
+readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite=FALSE, count_thr, minexpcc) {
 
 	mat <- normalizePath(df$mat[i])
 	bed <- normalizePath(df$bed[i])
@@ -354,6 +353,7 @@ readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite
  			dir.create(paste0(df$prefix[i],"_pca/","intra_pca/",df$prefix[i],"_mat"))
  		}
 
+ 		mat <- mat[mat$Weight > count_thr,]
 		if (ebackground == 1) {
 
 			cat ("Calculating expected counts from overall genomic background\n")
@@ -367,16 +367,15 @@ readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite
  			expInt <- do.call(rbind, expInt)
  			dist_param[,"totalpairinteraction"] <- expInt
  			dist_param[,"expcc"] <- dist_param$Weight/dist_param$totalpairinteraction
+ 			dist_param[dist_param$expcc < minexpcc,]$expcc <- minexpcc
+
  			data.table::fwrite(dist_param, file=paste0(df$prefix[i],"_pca/","intra_pca/",df$prefix[i],"_mat/Genome.distparam"), row.names=F, col.names=T, sep="\t", quote=F)
 
  			expcc_hash <- hashmap::hashmap(dist_param$dist, dist_param$expcc)
  			mat[,"WeightOE"] <- mat$Weight/expcc_hash[[mat$dist]]
  			print (head(mat))
  			print (nrow(mat))
- 			print (dist_param[dist_param$expcc < 3,]$dist[1])
- 			mat <- mat[mat$dist < dist_param[dist_param$expcc < 3,]$dist[1],]
- 			print (nrow(mat))
-
+ 	
   			chr.uniq <- unique(bed$chr)
   			for(j in 1:length(chr.uniq)) {
   	 		 	cat ("Writing ",as.character(chr.uniq[j]),".txt file\n")
@@ -409,6 +408,7 @@ readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite
  					expInt <- do.call(rbind, expInt)
  					dist_param[,"totalpairinteraction"] <- expInt
  					dist_param[,"expcc"] <- dist_param$Weight/dist_param$totalpairinteraction
+ 					dist_param[dist_param$expcc < minexpcc,]$expcc <- minexpcc
  					data.table::fwrite(dist_param, file=paste0(df$prefix[i],"_pca/","intra_pca/",df$prefix[i],"_mat/",chr.uniq[j],".distparam"), row.names=F, col.names=T, sep="\t", quote=F)
 
  					expcc_hash <- hashmap::hashmap(dist_param$dist, dist_param$expcc)
@@ -786,25 +786,6 @@ calcen <- function(df, class, rzscore, szscore, chrom) {
 	}
 }
 
-calcGlosh <- function(df, fdr.thr, glosh_k=5) {
-
-	cat("Calculating Glosh score\n")
-	rownames(df) <- paste0(df$chr,"_",df$start)
-	df_sig <- df[df$padj < fdr.thr,]
-	chrom  <- as.character(unique(df_sig$chr))
-	gloshscore <- list()
-	for(i in 1:length(chrom)) {
-		gloshscore[[i]] <- dbscan::glosh(as.matrix(dist(df_sig[df_sig$chr==as.character(chrom[i]),]$start)/1e6), k=glosh_k)
-	}
-	gloshscore <- unlist(gloshscore)
-	df_sig[,"glosh"] <- gloshscore
-	df[,"glosh"] <- 1
-	df[rownames(df_sig),"glosh"] <- df_sig$glosh
-	df$glosh <- 1 - df$glosh
-	return(df)
-}
-
-
 calchclust <- function(df, fdr.thr, hclust_dist=distclust) {
 
 	cat("Clustering by distance and removing lone peaks\n")
@@ -824,7 +805,7 @@ calchclust <- function(df, fdr.thr, hclust_dist=distclust) {
 }
 
 
-pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, distclust, numberclust) {
+pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, distclust, numberclust, refine, rconf) {
 
 	#Reformatting the data
 	if (!dir.exists("DifferentialResult") | diroverwrite == TRUE) {
@@ -1077,16 +1058,27 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				}
 
 				intra_grp_cen <- calcen(intra_grp, class="sample", rzscore, szscore, df_intra$chr[1])
-				max_min_dif <- abs(apply(intra_grp, 1, max) - apply(intra_grp, 1, min))
-				sam_mcd.cov <- robust::covRob(intra_grp)$cov
-				sample_maha <- list()
+				max_min_diff  <- abs(apply(intra_grp, 1, max) - apply(intra_grp, 1, min))^2
+				sam_mcd.cov   <- robust::covRob(intra_grp)$cov 
+				sample_maha   <- list()
 				for(k in 1:nrow(intra_grp)) {
-					sample_maha[[k]] <- mahalanobis(intra_grp[k,], as.matrix(intra_grp_cen[k,]), (sam_mcd.cov * (1/max_min_dif[k]^2)))
+					sample_maha[[k]] <- mahalanobis(intra_grp[k,],  as.matrix(intra_grp_cen[k,]), (solve(sam_mcd.cov) %*% diag(max_min_diff[k], ncol(sam_mcd.cov))), inverted=T)
 				}
-				
 				sample_maha <- unlist(sample_maha) 
 				pval <- pchisq(sample_maha, df=ncol(intra_grp)-1, lower.tail=F)
 
+				if (refine == TRUE) {
+  					intra_grp_2 <- as.data.frame(cbind(intra_grp, pval))
+  					intra_grp_2 <- as.matrix(intra_grp_2[intra_grp_2$pval > pchisq(qchisq(rconf, df=ncol(intra_grp)-1), df=ncol(intra_grp)-1, lower.tail=F),c(1:(ncol(intra_grp_2)-1))])
+  					sam_mcd.cov <- robust::covRob(intra_grp_2)$cov
+  					sample_maha <- list()
+					for(k in 1:nrow(intra_grp)) {
+						sample_maha[[k]] <- mahalanobis(intra_grp[k,],  as.matrix(intra_grp_cen[k,]), (solve(sam_mcd.cov) %*% diag(max_min_diff[k], ncol(sam_mcd.cov))), inverted=T)
+					}
+					sample_maha <- unlist(sample_maha)
+					pval <- pchisq(sample_maha, df=ncol(intra_grp)-1, lower.tail=F)
+				}
+ 				
 				if (rep_count > 0) {
 					intra_res[[j]]  <- data.frame(df_intra,intra_grp,replicate_wt,sample_maha,pval)
 				} else {
@@ -1111,10 +1103,8 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				}
 
 				if (distclust > -1) {
-					#intra_res <- calcGlosh(intra_res, fdr.thr, glosh_k=5)
 					intra_res <- calchclust(intra_res, fdr.thr, hclust_dist=distclust)
 				} else if (distclust == -1) {
-					#intra_res[,"glosh"] <- 1
 					intra_res[,"dist_clust"] <- 1
 					rownames(intra_res) <- paste0(intra_res$chr,"_",intra_res$start)
 				}
@@ -1123,7 +1113,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				cat ("Wrote ",paste0(diffolder,"/fdr_result/differential.intra_sample_combined.pcQnm.bedGraph")," file\n")
 
 				if (fdr.thr > 0) {
-					#write.table(intra_res[intra_res$padj < fdr.thr & intra_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
@@ -1132,7 +1121,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				cat ("Wrote ",paste0(diffolder,"/fdr_result/differential.intra_sample_group.pcQnm.bedGraph")," file\n")
 
 				if (fdr.thr > 0) {
-					#write.table(intra_res[intra_res$padj < fdr.thr & intra_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
@@ -1142,7 +1130,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				cat ("Wrote ",paste0(diffolder,"/fdr_result/differential.intra_sample_group.pcOri.bedGraph")," file\n")
 
 				if (fdr.thr > 0) {
-					#write.table(intra_res[intra_res$padj < fdr.thr & intra_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
 					write.table(intra_res[intra_res$padj < fdr.thr & intra_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.intra_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 			}
@@ -1194,15 +1181,26 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				}
 				
 				inter_grp_cen <- calcen(inter_grp, class="sample", rzscore, szscore, df_inter$chr[1])
-				max_min_dif <- abs(apply(inter_grp, 1, max) - apply(inter_grp, 1, min))
-				sam_mcd.cov <- robust::covRob(inter_grp)$cov
-				sample_maha <- list()
-				for(k in 1:nrow(inter_grp)) {
-					sample_maha[[k]] <- mahalanobis(inter_grp[k,], as.matrix(inter_grp_cen[k,]), (sam_mcd.cov * (1/max_min_dif[k]^2)))
+				max_min_diff  <- abs(apply(inter_grp, 1, max) - apply(inter_grp, 1, min))^2
+				sam_mcd.cov   <- robust::covRob(intra_grp)$cov 
+				sample_maha   <- list()
+				for(k in 1:nrow(intra_grp)) {
+					sample_maha[[k]] <- mahalanobis(inter_grp[k,],  as.matrix(inter_grp_cen[k,]), (solve(sam_mcd.cov) %*% diag(max_min_diff[k], ncol(sam_mcd.cov))), inverted=T)
 				}
-				
 				sample_maha <- unlist(sample_maha) 
 				pval <- pchisq(sample_maha, df=ncol(inter_grp)-1, lower.tail=F)
+
+				if (refine == TRUE) {
+  					inter_grp_2 <- as.data.frame(cbind(inter_grp, pval))
+  					inter_grp_2 <- as.matrix(inter_grp_2[inter_grp_2$pval > pchisq(qchisq(rconf, df=ncol(inter_grp)-1), df=ncol(inter_grp)-1, lower.tail=F),c(1:(ncol(inter_grp_2)-1))])
+  					sam_mcd.cov <- robust::covRob(inter_grp_2)$cov
+  					sample_maha <- list()
+					for(k in 1:nrow(inter_grp)) {
+						sample_maha[[k]] <- mahalanobis(inter_grp[k,],  as.matrix(inter_grp_cen[k,]), (solve(sam_mcd.cov) %*% diag(max_min_diff[k], ncol(sam_mcd.cov))), inverted=T)
+					}
+					sample_maha <- unlist(sample_maha)
+					pval <- pchisq(sample_maha, df=ncol(intra_grp)-1, lower.tail=F)
+				}
 
 				if (rep_count > 0) {
 					inter_res[[j]]  <- data.frame(df_inter,inter_grp,replicate_wt,sample_maha,pval)
@@ -1228,11 +1226,9 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				}
 
 				if (distclust > -1) {
-					#inter_res <- calcGlosh(inter_res, fdr.thr, glosh_k=5)
 					inter_res <- calchclust(inter_res, fdr.thr, hclust_dist=distclust)
 				} else if (distclust == -1) {
-					#inter_res[,"glosh"] <- 1
-					inter_res[,"dist_clust"] <- 1 
+					inter_res[,"dist_clust"] <- 1
 					rownames(inter_res) <- paste0(inter_res$chr,"_",inter_res$start)
 				}
 
@@ -1240,7 +1236,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				cat ("Wrote ",paste0(diffolder,"/fdr_result/differential.inter_sample_combined.pcQnm.bedGraph")," file\n")
 
 				if (fdr.thr > 0) {
-					#write.table(inter_res[inter_res$padj < fdr.thr & inter_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_combined.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
@@ -1249,7 +1244,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				cat ("Wrote ",paste0(diffolder,"/fdr_result/differential.inter_sample_group.pcQnm.bedGraph")," file\n")
 
 				if (fdr.thr > 0) {
-					#write.table(inter_res[inter_res$padj < fdr.thr & inter_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcQnm.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 
@@ -1259,7 +1253,6 @@ pcanalyze <- function(data, diroverwrite, diffolder, rzscore, szscore, fdr.thr, 
 				cat ("Wrote ",paste0(diffolder,"/fdr_result/differential.inter_sample_group.pcOri.bedGraph")," file\n")
 
 				if (fdr.thr > 0) {
-					#write.table(inter_res[inter_res$padj < fdr.thr & inter_res$glosh >= gscore, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
 					write.table(inter_res[inter_res$padj < fdr.thr & inter_res$dist_clust >= numberclust, ], file=paste0(diffolder,"/fdr_result/differential.inter_sample_group.Filtered.pcOri.bedGraph"), row.names=F, sep="\t", quote=F)
 				}
 			}
@@ -1775,9 +1768,8 @@ cat ("<!DOCTYPE html>
 <h1><u>dcHiC: Differential Compartment calling from Hi-C data</u></h1>
 <p style=\"color: #C86400\"><b>A compartment</b></p>
 <p style=\"color: #0064C8\"><b>B compartment</b></p>
-<p style=\"color: #99FFCC\"><b>Mdist: Mahalanobis distance score to represent outlierness of the bin</b></p>
-<p style=\"color: #009900\"><b>log10Padj: P adjusted value of corresponding Mdist score</b></p>
-<p style=\"color: #994C00\"><b>dZsc: Distance Zscore that represent biological variability as compared to technical variability</b></p>
+<p style=\"color: #99FFCC\"><b>Mahalanobis distance: Mahalanobis distance score to represent outlierness of the bin</b></p>
+<p style=\"color: #009900\"><b>log10Padj: -log10 of the P.adjusted value of corresponding Mdist score</b></p>
 <div id=\"igvDiv\" style=\"padding-top: 10px;padding-bottom: 10px; border:1px solid lightgray\"></div>\n")
 }
 
@@ -1848,7 +1840,7 @@ track name=\"",colnames(compbdg)[j]," PC\" description=\"BedGraph format\" visib
  			trackmaster <- paste0(colnames(compbdg)[4:(ncol(compbdg)-1)],collapse="_vs_") 
      		## Write Padjusted values
 			cat("# locus chr19:49302001-49304701\n# refGene encodeRegions\n# zero-based, half-open coords
-track name=\"log10Padj\" description=\"BedGraph format\" visibility=full color=0,153,0 priority=20 plotType=\"points\"\n",
+track name=\"-log10(Padj)\" description=\"BedGraph format\" visibility=full color=0,153,0 priority=20 plotType=\"points\"\n",
 			file=paste0(folder,"/data/differential_compartment.log10Padj.bedGraph"))    
 
 			compbdg_tmp <- compbdg[compbdg$padj > -log10(fdr_thr) & compbdg$dist_clust >= numberclust,]
@@ -1902,7 +1894,7 @@ track name=\"Mahalanobis distance\" description=\"BedGraph format\" visibility=f
 
         	## Write Glosh score
         	cat("# locus chr19:49302001-49304701\n# refGene encodeRegions\n# zero-based, half-open coords
-track name=\"Glosh Score\" description=\"BedGraph format\" visibility=full color=184,162,84 priority=20 plotType=\"points\"\n",
+track name=\"Distance cluster\" description=\"BedGraph format\" visibility=full color=184,162,84 priority=20 plotType=\"points\"\n",
 			file=paste0(folder,"/data/differential_compartment.Mahalanobis.bedGraph"))    
 
      		#write.table(compbdg[,c(1:3,(ncol(compbdg)))], file=paste0(folder,"/data/differential_compartment.GloshScore.bedGraph"), row.names=F, col.names=F,sep="\t", quote=F, append=T)
@@ -2024,7 +2016,7 @@ track name=\"",trackname,"\" description=\"BedGraph format\" visibility=full col
   	scriptbody(genome,end=T) 
 }
 
-generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fdr_thr, numberclust) {
+generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fdr_thr, numberclust, plotrep) {
 
 	diffdir <- paste0("DifferentialResult/",diffdir)
 	if (!dir.exists(paste0(diffdir,"/viz"))) {
@@ -2095,30 +2087,35 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 
 		comp_colA <- t(col2rgb(colorspace::diverge_hcl(length(prefix_master), c=100, l=c(50,90), power=0.5)))
 		comp_colB <- t(col2rgb(colorspace::heat_hcl(length(prefix_master), h=c(80,-100), l=c(75,40), c=c(40,80), power=0.5)))
-		#k <- length(prefix_master)
-		#l <- 2
-		#for(i in 1:length(prefix_master)) {
-		#	data_rep <- data[data$prefix.master== as.character(prefix_master[i]),] 
-		#	print (data_rep)
-		#	if (comp_colA[k,1] > comp_colB[k,1]) {
-		#		red_col <- paste0(comp_colA[k,], collapse=",")
-		#		blu_col <- paste0(comp_colB[k,], collapse=",")
-		#	} else {
-		#		red_col <- paste0(comp_colB[k,], collapse=",")
-		#		blu_col <- paste0(comp_colA[k,], collapse=",")
-		#	}
-		#	for(j in 1:nrow(data_rep)) {
-		#		file[[l]] <- data.frame(
-		#					file=paste0("./files/intra_",data_rep$prefix[j],"_PC.bedGraph"),
-		#					name=data_rep$prefix[j],
-		#					group="bedGraph",
-		#					color=paste0(red_col,":",blu_col)
-		#				)
-		#		l <- l + 1
-		#	}
-		#	k <- k - 1
-		#}
-		
+
+		## Replicate plot
+		if (plotrep == TRUE) {
+ 			k <- length(prefix_master)
+			l <- 2
+			for(i in 1:length(prefix_master)) {
+				data_rep <- data[data$prefix.master== as.character(prefix_master[i]),] 
+				print (data_rep)
+				if (comp_colA[k,1] > comp_colB[k,1]) {
+					red_col <- paste0(comp_colA[k,], collapse=",")
+					blu_col <- paste0(comp_colB[k,], collapse=",")
+				} else {
+					red_col <- paste0(comp_colB[k,], collapse=",")
+					blu_col <- paste0(comp_colA[k,], collapse=",")
+				}
+				for(j in 1:nrow(data_rep)) {
+					file[[l]] <- data.frame(
+								file=paste0("./files/intra_",data_rep$prefix[j],"_PC.bedGraph"),
+								name=data_rep$prefix[j],
+								group="bedGraph",
+								color=paste0(red_col,":",blu_col)
+							)
+					l <- l + 1
+				}
+				k <- k - 1
+			}
+		}
+		####################
+
 		if (file.exists(paste0(diffdir,"/fdr_result/intra_sample_group.subcompartments.bedGraph"))) {
 			for(j in 1:length(prefix_master)) {
 				file[[length(file)+j]] <- data.frame(
@@ -2186,7 +2183,7 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 		if (!file.exists(folder)) {
  			dir.create(folder)
 		}
-		sink(paste0(folder,"/intra_igv.html"))
+		sink(paste0(folder,"/intra_igv_",pcgrp,".html"))
 		htmlheader()
 		htmlbody(file, folder, genome, fdr_thr, numberclust)
 		sink()
@@ -2236,30 +2233,35 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 
 		comp_colA <- t(col2rgb(colorspace::diverge_hcl(length(prefix_master), c=100, l=c(50,90), power=0.5)))
 		comp_colB <- t(col2rgb(colorspace::heat_hcl(length(prefix_master), h=c(80,-100), l=c(75,40), c=c(40,80), power=0.5)))
-		#k <- length(prefix_master)
-		#l <- 2
-		#for(i in 1:length(prefix_master)) {
-		#	data_rep <- data[data$prefix.master== as.character(prefix_master[i]),] 
-		#	print (data_rep)
-		#	if (comp_colA[k,1] > comp_colB[k,1]) {
-		#		red_col <- paste0(comp_colA[k,], collapse=",")
-		#		blu_col <- paste0(comp_colB[k,], collapse=",")
-		#	} else {
-		#		red_col <- paste0(comp_colB[k,], collapse=",")
-		#		blu_col <- paste0(comp_colA[k,], collapse=",")
-		#	}
-		#	for(j in 1:nrow(data_rep)) {
-		#		file[[l]] <- data.frame(
-		#					file=paste0("./files/inter_",data_rep$prefix[j],"_PC.bedGraph"),
-		#					name=data_rep$prefix[j],
-		#					group="bedGraph",
-		#					color=paste0(red_col,":",blu_col)
-		#				)
-		#		l <- l + 1
-		#	}
-		#	k <- k - 1
-		#}
 		
+		## Replicate plots
+		if (plotrep == TRUE) {
+			k <- length(prefix_master)
+			l <- 2
+			for(i in 1:length(prefix_master)) {
+				data_rep <- data[data$prefix.master== as.character(prefix_master[i]),] 
+				print (data_rep)
+				if (comp_colA[k,1] > comp_colB[k,1]) {
+					red_col <- paste0(comp_colA[k,], collapse=",")
+					blu_col <- paste0(comp_colB[k,], collapse=",")
+				} else {
+					red_col <- paste0(comp_colB[k,], collapse=",")
+					blu_col <- paste0(comp_colA[k,], collapse=",")
+				}
+				for(j in 1:nrow(data_rep)) {
+					file[[l]] <- data.frame(
+								file=paste0("./files/inter_",data_rep$prefix[j],"_PC.bedGraph"),
+								name=data_rep$prefix[j],
+								group="bedGraph",
+								color=paste0(red_col,":",blu_col)
+							)
+					l <- l + 1
+				}
+				k <- k - 1
+			}
+		}
+		################
+
 		if (file.exists(paste0(diffdir,"/fdr_result/inter_sample_group.subcompartments.bedGraph"))) {
 			for(j in 1:length(prefix_master)) {
 				file[[length(file)+j]] <- data.frame(
@@ -2317,7 +2319,7 @@ generateTrackfiles <- function(data, diffdir, genome, bdgfile, pcgrp="pcQnm", fd
 		if (!file.exists(folder)) {
  			dir.create(folder)
 		}
-		sink(paste0(folder,"/inter_igv.html"))
+		sink(paste0(folder,"/inter_igv_",pcgrp,".html"))
 		htmlheader()
 		htmlbody(file, folder, genome, fdr_thr, numberclust)
 		sink()
@@ -2731,8 +2733,17 @@ option_list = list(
  	make_option(c("--szsc"), type="numeric", default=0, help="Sample zscore threshold. Increasing the value makes dcHiC specific towards finding large PC difference across sample
  		[default 0]\n"),
 
+ 	make_option(c("--refine"), type="logical", default=TRUE, help="Perform refinement of differential compartments after removing outliers
+ 		[default TRUE]\n"),
+
+ 	make_option(c("--rconf"), type="numeric", default=0.90, help="Confidence level of the distribution to remove outliers and perform a refinement (Only applicable when --refine is set to TRUE)
+ 		[default 0.90]\n"),
+
  	make_option(c("--fdr"), type="numeric", default=0.05, help="Report only above this FDR threshold
  		[default 0.05]\n"),
+
+ 	make_option(c("--plotrep"), type="logical", default=FALSE, help="Plot the replicates in IGV html page
+ 		[default FALSE, optional]\n"),
 
  	make_option(c("--distclust"), type="numeric", default=-1, help="Distance threshold for clustering close differential regions. This will help to remove lone differential compartments in the chromosome. A distclust value of 0 will cluster differential compartments that are adjacent to each other. Higher the value further apart the differential compartments are
  		[default -1 i.e. no clustering of result. Provide the value in basepairs]\n"),
@@ -2743,8 +2754,11 @@ option_list = list(
  	make_option(c("--subnum"), type="integer", default=6, help="Total number of sub-compartments to find 
  		[default 6]\n"),
 
- 	 make_option(c("--minc"), type="integer", default=5, help="Minimum interaction count to be retained during differential loop calling 
- 		[default 6]\n"),
+ 	 make_option(c("--minc"), type="integer", default=0, help="Minimum interaction count to be retained during pca (cis) calculation and differential loop calling 
+ 		[default 0]\n"),
+
+ 	 make_option(c("--minexpcc"), type="numeric", default=0, help="Minimum expected interaction. For high resolution analysis the expected interaction gets very low value, setting this to a minimum value will keep the expected interaction within a threshold
+ 		[default 0]\n"),
 
  	 make_option(c("--maxd"), type="integer", default=2e6, help="Maximum distance (bp) between interactions to be kept during differential loop calling 
  		[default 2e6]\n"),
@@ -2803,6 +2817,8 @@ rzscore    <- as.numeric(opt$rzsc)
 szscore    <- as.numeric(opt$szsc)
 fdr_thr    <- as.numeric(opt$fdr)
 gscore     <- as.numeric(opt$gscore)
+rconf 	   <- as.numeric(opt$rconf)
+minexpcc   <- as.numeric(opt$minexpcc)
 diffdir    <- as.character(opt$diffdir)
 subnum     <- as.integer(opt$subnum)
 count_thr  <- as.integer(opt$minc)
@@ -2821,6 +2837,8 @@ dirovwt    <- opt$dirovwt
 exclA      <- opt$exclA
 pcscore    <- opt$pcscore
 compare    <- opt$compare
+refine     <- opt$refine
+plotrep    <- opt$plotrep
 
 pc <- as.integer(opt$pc)
 
@@ -2836,9 +2854,9 @@ prefix_master  <- unique(data$prefix.master)
 
 if (pcatype == "cis" | pcatype == "both") {
 	if (sthread > 1) {
-		invisible(parallel::parLapply(cl_sthread, 1:nrow(data), readfilesintra, data, pc, eigendiv, ebackgrnd, cthread, pthread, dirovwt))
+		invisible(parallel::parLapply(cl_sthread, 1:nrow(data), readfilesintra, data, pc, eigendiv, ebackgrnd, cthread, pthread, dirovwt, count_thr, minexpcc))
 	} else {
-		invisible(lapply(1:nrow(data), readfilesintra, data, pc, ebackgrnd, cthread, pthread, dirovwt))
+		invisible(lapply(1:nrow(data), readfilesintra, data, pc, ebackgrnd, cthread, pthread, dirovwt, count_thr, minexpcc))
 	}
 } else if (pcatype == "trans" | pcatype == "both") {
 	if (sthread > 1) {
@@ -2860,7 +2878,7 @@ if (pcatype == "select") {
 if (pcatype == "analyze") {
 
 	cat ("Running intra sample differential calls for ",prefix_master," samples\n")
-	pcanalyze(data, dirovwt, diffdir, rzscore, szscore, fdr_thr, distclust, numberclust)
+	pcanalyze(data, dirovwt, diffdir, rzscore, szscore, fdr_thr, distclust, numberclust, refine, rconf)
 }
 
 if (pcatype == "subcomp") {
@@ -2897,7 +2915,7 @@ if (pcatype == "viz") {
 	if(is.na(genome)) {
 		stop("Please provide a valid genome id")
 	} else {
-		generateTrackfiles(data, diffdir, genome, bdgfile, pcgrp, fdr_thr, numberclust)
+		generateTrackfiles(data, diffdir, genome, bdgfile, pcgrp, fdr_thr, numberclust, plotrep)
 	}
 }
 
