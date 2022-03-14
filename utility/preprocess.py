@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-input", action= 'store', dest = 'input', help= "[required] 'cool' for .cool files, and 'hic' for .hic files.")
 
-parser.add_argument("-file", action = "store", dest = "file", help = "[required] Enter the .cool/.mcool file")
+parser.add_argument("-file", action = "store", dest = "file", help = "[required] Enter the .cool/.mcool/.hic file path")
 
 parser.add_argument("-res", action = "store", dest = "res", help = "[required] Enter the resolution for the processing")
 
@@ -24,9 +24,7 @@ parser.add_argument("-prefix", action = "store", dest = "prefix", help = "[requi
 parser.add_argument("-genomeFile", action = "store", dest = "genomeSize", help = "[.cool only] Location of chromosome size file (Must be: hg38, hg19, mm10, mm9)")
 
 parser.add_argument("-removeChr", action = 'store', dest = 'remove', help = "[.hic only] Remove chromosomes: {Chr,Chr,Chr} format. Commonly used for Y. Default MT removed.")
-
-parser.add_argument("-ct", action='store', dest='ct', help="[.hic only] 'cis' if you only want to do cis analysis; 'trans' if you want to dump all info (more memory).")
-                    
+            
 results = parser.parse_args()
 
 scriptdir = os.path.dirname(os.path.abspath(sys.argv[0]))
