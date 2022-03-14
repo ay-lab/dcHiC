@@ -87,7 +87,7 @@ matr2_e2.txt  matr2_e2.bed   exp2_R2_100kb                  exp2
 
 ## Input Data
 
-dcHiC accepts sparse matrices as its input. If you have *.cool* files, see how to convert their format [here](https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Data). Support for *.hic* files is forthcoming. 
+dcHiC accepts sparse matrices as its input (Hi-C Pro style). If you have *.cool* or *.hic* files, see how to convert their format [here](https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Data). 
 
 To see the full list of options, run `Rscript dchicf.r --help` or view `dchicdoc.txt` [here](https://github.com/ay-lab/dcHiC/blob/master/dchicdoc.txt).
 
