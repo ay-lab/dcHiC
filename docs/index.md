@@ -1,8 +1,6 @@
 # dcHiC HTML Demo Page
 
-The following examples were created using dcHiC’s standalone visualization utility, which allows for single-command creation of beautiful, standalone HTML files that allow for interactive compartment/genomic visualization. Each file has a set of controls on the top, which allow users to search by region or by gene. They were created at resolutions specified in each description with an FDR of 0.1 and default differential compartment refinement. These files, available for download in the GitHub and created using IGV, will take a few seconds to load.
-
-See examples from the paper below. 
+The following examples were created using dcHiC’s standalone visualization utility, which allows for single-command creation of HTML files for interactive compartment/genomic visualization. Examples from the paper are included below. Each file has a set of controls on the top, which allow users to search by region or by gene. These pages, available for download in the GitHub and created using IGV, will take a few seconds to load.
 
 ## ESC vs NPC (100kb)
 
@@ -31,13 +29,14 @@ LaminB1 Data
 RNA-Seq Data (TPM)
 ```
 
-In all three examples, notable **mESC**-specific genes include: *Dppa2/4* and *Zpf42*. Notable **NPC/CN**-specific genes include: *Ptn* and *Ephb1*. 
+### Notable Regions
+In all three ESC vs NPC examples, notable **mESC**-specific genes include: *Dppa2/4* and *Zpf42*. Notable **NPC/CN**-specific genes include: *Ptn* and *Ephb1*. 
 
 ## Hematopoiesis 
 
-See [this page](https://ay-lab.github.io/dcHiC/gorking_hg19_40Kb.RefineY_Rconf90_FDR10.pcOri.html) for compartment dynamics during mice hematopoetic differentiation. This page contains compartments and differential compartment scores. 
+See [this page](https://ay-lab.github.io/dcHiC/hematopoiesis_100Kb.RefineY_Rconf90_FDR10.pcOri.html) for compartment dynamics during mice hematopoetic differentiation. This page contains compartments and differential compartment scores. 
 
-Two notable genes with significant decreasing A-compartment changes include **Myc/Pvt1** and **Meis1**. Others include **Runx2, Sox6, and Abca13**.
+Notable changes include **Meis1**, **Runx2**, **Sox6**, and Abca13**.
 
 ## Lympoblastoid Data
 
@@ -45,5 +44,7 @@ See [this page](https://ay-lab.github.io/dcHiC/gorking_hg19_40Kb.RefineY_Rconf90
 
 Notable differential regions include **NR2F2** and **PTPRK**.
 
+## Trans Compartments
 
+dcHiC includes compartment calling from *trans* compartment interactions. To view *cis* and *trans* compartments side-by-side, see this [page](https://ay-lab.github.io/dcHiC/ESC_100Kb_cis_vs_trans.RefineY_Rconf90_FDR10.pcOri.html) for the ESC comparison and [this](https://ay-lab.github.io/dcHiC/NPC_100Kb_cis_vs_trans.RefineY_Rconf90_FDR10.pcOri.html) for NPC. All analysis here is at 100kb resolution. 
 
