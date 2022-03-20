@@ -43,8 +43,3 @@ Notable changes include **Meis1**, **Runx2**, **Sox6**, and Abca13**.
 See [this page](https://ay-lab.github.io/dcHiC/gorking_hg19_40Kb.RefineY_Rconf90_FDR10.pcOri.html) for compartment scores across 20 lymphoblastoid cell lines, using data from [*Gorkin et al, 2019*](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1855-4). This page contains compartments and differential compartment scores. 
 
 Notable differential regions include **NR2F2** and **PTPRK**.
-
-## Trans Compartments
-
-dcHiC includes compartment calling from *trans* compartment interactions. To view *cis* and *trans* compartments side-by-side, see this [page](https://ay-lab.github.io/dcHiC/ESC_100Kb_cis_vs_trans.RefineY_Rconf90_FDR10.pcOri.html) for the ESC comparison and [this](https://ay-lab.github.io/dcHiC/NPC_100Kb_cis_vs_trans.RefineY_Rconf90_FDR10.pcOri.html) for NPC. All analysis here is at 100kb resolution. 
-
