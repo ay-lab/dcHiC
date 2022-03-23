@@ -36,7 +36,7 @@ In all three ESC vs NPC examples, notable **mESC**-specific genes include: *Dppa
 
 See [this page](https://ay-lab.github.io/dcHiC/hematopoiesis_100Kb.RefineY_Rconf90_FDR10.pcOri.html) for compartment dynamics during mice hematopoetic differentiation. This page contains compartments and differential compartment scores. 
 
-Notable changes include **Meis1**, **Runx2**, **Sox6**, and Abca13**.
+Notable changes include **Meis1**, **Runx2**, **Sox6**, and **Abca13**.
 
 ## Lympoblastoid Data
 
