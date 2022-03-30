@@ -20,3 +20,39 @@ Using `getcHiCinputfromExistingPCs.r`, anyone can reformat their existing pc val
 The first column is the path to the bedGraph file with PC information (4th column of the bedGraph file), the second column can have either 'intra' or 'inter' 
 (whether component calculations were done with intra-chromosomal or inter-chromosomal data). The third column is the replicate name, and the fourth column
 is the sample name. Replicate names and sample names should be different. 
+
+# Time-series cluster the differential compartments
+Using `pcacluster.r`, anyone can perform a time-series clustering of the normalized pc values from each sample. Check the help description for more details:
+```
+Options:
+        --pcafile=PCAFILE
+                dcHiC output file for example the differential.<intra/inter>_sample_group.Filtered.pcQnm.bedGraph file
+
+
+        --samplefile=SAMPLEFILE
+                A single column file that defines which columns to select from the bedGraph file
+
+
+        --kcenter=KCENTER
+                The number of centers to find from bedGraph file [Default 6]
+
+
+        --genebed=GENEBED
+                A sorted bed file with gene names in its fourth column
+
+
+        --minprob=MINPROB
+                Minimum probability for cluster membership [Default 0]
+
+
+        --output=OUTPUT
+                The prefix for all the output files [Default pc_clustered]
+
+
+        ##### Note #####
+        Please cite Wu M, Gu L (2021). TCseq: Time course sequencing data analysis. R package version 1.18.0 if you're using this code along with dcHiC
+
+
+        -h, --help
+                Show this help message and exit
+```                
