@@ -2739,8 +2739,8 @@ option_list = list(
  	make_option(c("--rconf"), type="numeric", default=0.90, help="Confidence level of the distribution to remove outliers and perform a refinement (Only applicable when --refine is set to TRUE)
  		[default 0.90]\n"),
 
- 	make_option(c("--fdr"), type="numeric", default=0.05, help="Report only above this FDR threshold
- 		[default 0.05]\n"),
+ 	make_option(c("--fdr"), type="numeric", default=0.1, help="Report only above this FDR threshold
+ 		[default 0.1]\n"),
 
  	make_option(c("--plotrep"), type="logical", default=FALSE, help="Plot the replicates in IGV html page
  		[default FALSE, optional]\n"),
