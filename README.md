@@ -50,13 +50,13 @@ To install the dependencies manually, ensure that you have the following package
 - bench
 - bigstatsr
 - bigreadr
-- limma (bioconductor)
-- IHW (bioconductor)
 - robust
 - data.table
-- networkd3
-- DepmixS4
-- json
+- networkD3
+- depmixS4
+- rjson
+- limma (bioconductor)
+- IHW (bioconductor)
 - hashmap (.tar.gz file under 'packages')
 
 ### Packages in Python
