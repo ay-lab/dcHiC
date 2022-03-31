@@ -57,6 +57,7 @@ To install the dependencies manually, ensure that you have the following package
 - rjson
 - limma (bioconductor)
 - IHW (bioconductor)
+- R.utils
 - hashmap (.tar.gz file under 'packages')
 
 ### Packages in Python
@@ -65,6 +66,12 @@ To install the dependencies manually, ensure that you have the following package
 Those who wish to perform differential loop analysis should also download the latest Python version of FitHiC, which requires a set of [Python libraries](https://github.com/ay-lab/fithic): numpy, scipy, sk-learn, sortedcontainers, and matplotlib. You may also need to install 'cooler' if you wish to use *.cool* files. See [documentation](https://github.com/ay-lab/dcHiC/wiki/Pre-Processing-Data) on how to do so. 
 
 Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz` (functions file under 'packages'). 
+
+### Check which R packages are already installed
+```
+Rscript -e 'plist <- c("functionsdchic","hashmap","R.utils","Rcpp","RcppEigen","BH","optparse","bench","bigstatsr","bigreadr","robust","data.table","networkD3","depmixS4","rjson","limma","IHW"); setdiff(plist,basename(find.package(plist)))'
+````
+If you get character(0) then you're all set, otherwise install the packages shown in the output.
 
 ## Input File
 
