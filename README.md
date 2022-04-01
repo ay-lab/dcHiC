@@ -18,7 +18,7 @@ See web-hosted visualization examples of case scenarios in the new version [here
 
 ### Demo
 
-This README contains the key information you will need to use this application. However, some users may find a demo helpful—ours includes a script to run package installation as well as detailed guides for different options of dcHiC. All of these resources are available in `dchic_demo.zip`, with relevant instructions inside! 
+This README contains the key information you will need to use this application. However, some users may find a demo helpful—ours includes a script to run package installation as well as detailed guides for different options of dcHiC. All of these resources are available in `packages/dchic_demo.zip`, with relevant instructions inside! 
 
 ## Installation
 
