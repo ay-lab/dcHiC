@@ -1,16 +1,12 @@
 # dcHiC: Differential Compartment Analysis of Hi-C Datasets [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release (under the branch "dcHiC-v1"), and remains the only tool to perform Hi-C compartment analyses between multiple datasets. Like in the first release, the latest version provides:
+dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release (under the branch "dcHiC-v1"), and remains the only tool to perform Hi-C compartment analyses between multiple datasets. It features many capabilities, including:
 
+- Optimized PCA calculations (faster + capable of analysis up to 5kb resolution)
 - Comprehensive identification of significant compartment changes between any number of cell lines (with replicates)
 - Beautiful standalone HTML files for visualization of results
-
-Now, however, it also has the following improvements and new functions: 
-
-- Option to perform compartment computations on intra-chromosomal (cis) and inter-chromosomal (trans) Hi-C counts
-- Optimized PCA calculations (faster + capable of analysis up to 5kb resolution)
-- HMM subcompartment identification based on compartment values
 - Identification of differential loops anchored in significant differential compartments (using [Fit-Hi-C](https://github.com/ay-lab/fithic))
+- Gene Ontology annotation of differential compartments 
 
 While we hope that all users try the latest version of dcHiC, all code and documentation for the first version remains and we will continue offering support for it into the future. 
 
@@ -19,6 +15,10 @@ While we hope that all users try the latest version of dcHiC, all code and docum
 If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). Please note that this paper describes the first iteration of dcHiC, from which there have been fairly significant methodology changes. 
 
 See web-hosted visualization examples of case scenarios in the new version [here](https://ay-lab.github.io/dcHiC).
+
+### Demo
+
+This README contains the key information you will need to use this application. However, some users may find a demo helpful—ours includes a script to run package installation as well as detailed guides for different options of dcHiC. All of these resources are available in `dchic_demo.zip`, with relevant instructions inside! 
 
 ## Installation
 
