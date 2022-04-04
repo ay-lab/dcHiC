@@ -2757,7 +2757,7 @@ option_list = list(
  	 make_option(c("--minc"), type="integer", default=0, help="Minimum interaction count to be retained during pca (cis) calculation and differential loop calling 
  		[default 0]\n"),
 
- 	 make_option(c("--minexpcc"), type="numeric", default=0, help="Minimum expected interaction. For high resolution analysis the expected interaction gets very low value, setting this to a minimum value will keep the expected interaction within a threshold
+ 	 make_option(c("--minexpcc"), type="numeric", default=1, help="Minimum expected interaction. For high resolution analysis the expected interaction gets very low value, setting this to a minimum value will keep the expected interaction within a threshold
  		[default 0]\n"),
 
  	 make_option(c("--maxd"), type="integer", default=2e6, help="Maximum distance (bp) between interactions to be kept during differential loop calling 
