@@ -12,7 +12,7 @@ While we hope that all users try the latest version of dcHiC, all code and docum
 
 ### Paper 
 
-If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v1). Please note that this paper describes the first iteration of dcHiC, from which there have been fairly significant methodology changes. 
+If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v2). Please note that this paper describes the first iteration of dcHiC, from which there have been fairly significant methodology changes. 
 
 See web-hosted visualization examples of case scenarios in the new version [here](https://ay-lab.github.io/dcHiC).
 
