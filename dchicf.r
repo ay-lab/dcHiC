@@ -367,8 +367,7 @@ readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite
  			expInt <- do.call(rbind, expInt)
  			dist_param[,"totalpairinteraction"] <- expInt
  			dist_param[,"expcc"] <- dist_param$Weight/dist_param$totalpairinteraction
- 			dist_param[dist_param$expcc < minexpcc,]$expcc <- minexpcc
-
+ 			dist_param[dist_param$expcc <= ifelse(min(dist_param$expcc) > minexpcc, min(dist_param$expcc), minexpcc),]$expcc <- ifelse(min(dist_param$expcc) > minexpcc, min(dist_param$expcc), minexpcc)
  			data.table::fwrite(dist_param, file=paste0(df$prefix[i],"_pca/","intra_pca/",df$prefix[i],"_mat/Genome.distparam"), row.names=F, col.names=T, sep="\t", quote=F)
 
  			expcc_hash <- hashmap::hashmap(dist_param$dist, dist_param$expcc)
@@ -408,7 +407,7 @@ readfilesintra <- function(i, df, pcout, ebackground, cthrd, pthrd, diroverwrite
  					expInt <- do.call(rbind, expInt)
  					dist_param[,"totalpairinteraction"] <- expInt
  					dist_param[,"expcc"] <- dist_param$Weight/dist_param$totalpairinteraction
- 					dist_param[dist_param$expcc < minexpcc,]$expcc <- minexpcc
+ 					dist_param[dist_param$expcc <= ifelse(min(dist_param$expcc) > minexpcc, min(dist_param$expcc), minexpcc),]$expcc <- ifelse(min(dist_param$expcc) > minexpcc, min(dist_param$expcc), minexpcc)
  					data.table::fwrite(dist_param, file=paste0(df$prefix[i],"_pca/","intra_pca/",df$prefix[i],"_mat/",chr.uniq[j],".distparam"), row.names=F, col.names=T, sep="\t", quote=F)
 
  					expcc_hash <- hashmap::hashmap(dist_param$dist, dist_param$expcc)
