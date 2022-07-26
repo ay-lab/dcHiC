@@ -43,3 +43,10 @@ Notable changes include **Meis1**, **Runx2**, **Sox6**, and **Abca13**.
 See [this page](https://ay-lab.github.io/dcHiC/gorking_hg19_40Kb.RefineY_Rconf90_FDR10.pcOri.html) for compartment scores across 20 lymphoblastoid cell lines, using data from [*Gorkin et al, 2019*](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1855-4). This page contains compartments and differential compartment scores. 
 
 Notable differential regions include **NR2F2** and **PTPRK**.
+
+## Pseudo-Bulk scHi-C Data
+
+Using postnatal neuronal scHi-C data, we created pseudo-bulk maps for analysis. In particular, [Tan. et al](https://www.cell.com/cell/fulltext/S0092-8674(20)31754-2) created scHi-C maps for the cortex and hippocampus at days 1, 7, 28, 56, 309, and 347. We separated these into early, middle, and late stage maps for each cell type -- six different clusters in total. 
+
+See [this page](https://ay-lab.github.io/dcHiC/hippocampus_cells.early_mid_late.intra_igv_pcOri.html) for the hippocampus comparison and [this one](https://ay-lab.github.io/dcHiC/cortex_cells.early_mid_late.intra_igv_pcOri.html) for the cortex comparison.
+
