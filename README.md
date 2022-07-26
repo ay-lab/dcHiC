@@ -3,18 +3,16 @@
 dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release (under the branch "dcHiC-v1"), and remains the only tool to perform Hi-C compartment analyses between multiple datasets. It features many capabilities, including:
 
 - Optimized PCA calculations (faster + capable of analysis up to 5kb resolution)
-- Comprehensive identification of significant compartment changes between any number of cell lines (with replicates)
+- Comprehensive identification of significant compartment changes between any number of cell lines (with replicates), including with pseudo-bulk single cell data
 - Beautiful standalone HTML files for visualization of results
 - Identification of differential loops anchored in significant differential compartments (using [Fit-Hi-C](https://github.com/ay-lab/fithic))
 - Gene Ontology annotation of differential compartments 
 
 While we hope that all users try the latest version of dcHiC, all code and documentation for the first version remains and we will continue offering support for it into the future. 
 
-### Paper 
+### Paper
 
-If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v2). Please note that this paper describes the first iteration of dcHiC, from which there have been fairly significant methodology changes. 
-
-See web-hosted visualization examples of case scenarios in the new version [here](https://ay-lab.github.io/dcHiC).
+If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v2). See web-hosted visualization examples of case scenarios in the new version [here](https://ay-lab.github.io/dcHiC). To see how to run dcHiC, read our docs and try our demo (below)! Information about data pre-processing and running single-cell data is available in the [wiki](https://github.com/ay-lab/dcHiC/wiki). 
 
 ### Demo
 
@@ -204,18 +202,23 @@ dcHiC_dir
 
 There are a few technical implementation items to note:
 
-**Support for other genomes:** While it has only been extensively tested for human and mouse genomes, dcHiC supports most other commonly-used genomes that are under the UCSC [genome page](https://hgdownload.soe.ucsc.edu/goldenPath/). To utilize this, create a folder *{genome}_{resolution}_goldenpathData* (e.g hg38_100000_goldenpathData). Within that folder put three files: a) {genome}.fa (e.g. hg38.fa from https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz) b) {genome}.tss.bed (e.g. hg38.tss.bed, this is simply the transciption start site position of the https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.refGene.gtf.gz file. Please make sure tss position is selected based on the strad direction) & c) {genome}.chrom.sizes files (e.g. hg38.chrom.sizes from https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes). These files can be found under the UCSC bigZips page for the specified genome. When running dcHiC use the `--gfolder` option in the `select` step to provide the folder path, and dcHiC will create the necessary files. 
+**If you are running into issues during running dcHiC, removing chrM, chrY and other non-standard chromosomes may help.**
+
+**Support for other genomes:** While it has only been extensively tested for human and mouse genomes, dcHiC supports most other commonly-used genomes that are under the UCSC [genome page](https://hgdownload.soe.ucsc.edu/goldenPath/). To utilize this, create a folder `*{genome}_{resolution}_goldenpathData*` (e.g hg38_100000_goldenpathData).
+
+Within that folder put three files: 
+- `{genome}.fa` (e.g. [hg38.fa](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz)) 
+- `{genome}.tss.bed` (e.g. [hg38.tss.bed](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.refGene.gtf.gz), the TSS file. Please make sure the TSS position is selected based on the strad direction!)
+- `{genome}.chrom.sizes` (e.g. [hg38.chrom.sizes](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes)). 
+
+These files can be found under the UCSC bigZips page for the specified genome. When running dcHiC use the `--gfolder` option in the `select` step to provide the folder path, and dcHiC will create the necessary files. 
  
-**Compartment clustering:** Due to statistical noise, edge cases, and other factors, lone differential compartments occassionally crop up (ex: one bin is "significant" but all of its neighbors are not). These may be significant if analyzing at coarse resolution, but can also be misleading, especially if analyzing at very fine resolution. By default, dcHiC does not filter any of these lone compartments; however, there are two parameters to do so: *distclust* is the distance threshold for close differential regions to be a "cluster." If it's 0, only adjacent differential compartments form a cluster. If it's 1, differential compartments separated by up to 1 bin are a cluster. The other parameter is *numberclust*, which is a filter for the minimum number of significant bins within a cluster. 
+**Compartment clustering:** Due to statistical noise, edge cases, and other factors, lone differential compartments occassionally crop up (ex: one bin is "significant" but all of its neighbors are not). These may be significant if analyzing at coarse resolution, but can also be misleading, especially if analyzing at very fine resolution. By default, dcHiC does not filter any of these lone compartments; however, there are two parameters to do so: `distclust` is the distance threshold for close differential regions to be a "cluster." If it's 0, only adjacent differential compartments form a cluster. If it's 1, differential compartments separated by up to 1 bin are a cluster. The other parameter is `numberclust`, which is a filter for the minimum number of significant bins within a cluster. 
 
 **Quantile Normalization:** Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
-
-
-## During running if you are running into issues, removing chrM, chrY and other non-standard chromosomes may help. 
 
 ## Contact
 
 For help with installation, technical issues, interpretation, or other details, feel free to raise an issue or contact us: 
 
-Jeffrey Wang (jeffreywang@lji.org), Abhijit Chakraborty (abhijit@lji.org), Ferhat Ay (ferhatay@lji.org)
-
+Abhijit Chakraborty (abhijit@lji.org), Jeffrey Wang (jeffreywang@lji.org), Ferhat Ay (ferhatay@lji.org)
