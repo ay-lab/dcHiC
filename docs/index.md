@@ -46,7 +46,7 @@ Notable differential regions include **NR2F2** and **PTPRK**.
 
 ## Pseudo-Bulk scHi-C Data
 
-Using postnatal neuronal scHi-C data, we created pseudo-bulk maps for analysis. In particular, [Tan. et al](https://www.cell.com/cell/fulltext/S0092-8674(20)31754-2) created scHi-C maps for the cortex and hippocampus at days 1, 7, 28, 56, 309, and 347. We separated these into early, middle, and late stage maps for each cell type -- six different clusters in total. 
+Using postnatal neuronal scHi-C data, we created pseudo-bulk maps for analysis. In particular, [Tan. et al](https://www.cell.com/cell/fulltext/S0092-8674(20)31754-2) created scHi-C maps for the cortex and hippocampus at days 1, 7, 28, 56, 309, and 347. We separated these into early (1/7), middle (28/56), and late (309/347) stage maps for each cell type -- six different clusters in total. 
 
 See [this page](https://ay-lab.github.io/dcHiC/hippocampus_cells.early_mid_late.intra_igv_pcOri.html) for the hippocampus comparison and [this one](https://ay-lab.github.io/dcHiC/cortex_cells.early_mid_late.intra_igv_pcOri.html) for the cortex comparison.
 
