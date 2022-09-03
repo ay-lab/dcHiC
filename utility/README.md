@@ -56,3 +56,11 @@ Options:
         -h, --help
                 Show this help message and exit
 ```                
+
+# Merge continuous differential compartments 
+
+The mergeDEcompartments.sh script will help the user to merge continuous differential compartments. Use the following command to merge the differential compartments (FDR < 0.1 by default, change the value inside the script)
+
+``` 
+./mergeDEcompartments.sh -f <path/to/differential.intra_sample_group.pcOri.bedGraph> -d <distance in base pairs>
+```
