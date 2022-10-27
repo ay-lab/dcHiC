@@ -1,4 +1,7 @@
-# dcHiC: Differential Compartment Analysis of Hi-C Datasets [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+# dcHiC: Differential Compartment Analysis of Hi-C Datasets 
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/274827002.svg)](https://zenodo.org/badge/latestdoi/274827002)
 
 dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release (under the branch "dcHiC-v1"), and remains the only tool to perform Hi-C compartment analyses between multiple datasets. It features many capabilities, including:
 
@@ -202,7 +205,9 @@ dcHiC_dir
 
 There are a few technical implementation items to note:
 
-**If you are running into issues during running dcHiC, removing chrM, chrY and other non-standard chromosomes may help.**
+**Chromosomes:**If you are running into issues during running dcHiC, removing chrM, chrY and other non-standard chromosomes may help.
+
+**`fithic`/`dloop`**: If running `dloop`, dcHiC will first run Fit-Hi-C on the data. You will need to follow the Fit-Hi-C running procedure to do this, which will require generating a bias file. See "FitHiC2 bias file format" [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7451401/). 
 
 **Support for other genomes:** While it has only been extensively tested for human and mouse genomes, dcHiC supports most other commonly-used genomes that are under the UCSC [genome page](https://hgdownload.soe.ucsc.edu/goldenPath/). To utilize this, create a folder `*{genome}_{resolution}_goldenpathData*` (e.g hg38_100000_goldenpathData).
 
