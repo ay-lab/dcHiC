@@ -222,6 +222,12 @@ These files can be found under the UCSC bigZips page for the specified genome. W
 
 **Quantile Normalization:** Comparing raw Hi-C compartment values can be somewhat risky, as the quantitative nature of compartment profiles can vary between experiments (due to assay biases like crosslinking behavior, restriction enzyme, etc). As such, dcHiC quantile-normalizes PC values before performing differential calling, although raw results are also given.
 
+
+## Chromosome-arm wise PCA calculation
+
+In order to perform p and q-arm wise PCA calculate, please check the __run_dcHiC_chrArms_pca_step1.pl__ and __run_dcHiC_chrArms_combine_step2.pl__ scripts provided under the ``` 
+
+
 ## Contact
 
 For help with installation, technical issues, interpretation, or other details, feel free to raise an issue or contact us: 
