@@ -225,7 +225,7 @@ These files can be found under the UCSC bigZips page for the specified genome. W
 
 ## Chromosome-arm wise PCA calculation
 
-In order to perform p and q-arm wise PCA calculate, please check the __run_dcHiC_chrArms_pca_step1.pl__ and __run_dcHiC_chrArms_combine_step2.pl__ scripts provided under the ``` 
+In order to perform p and q-arm wise PCA calculate, please check the __run_dcHiC_chrArms_pca_step1.pl__ and __run_dcHiC_chrArms_combine_step2.pl__ scripts provided under the ```utility/Chromosome_ArmWise_PCA/``` folder.  
 
 
 ## Contact
