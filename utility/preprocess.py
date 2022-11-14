@@ -9,7 +9,7 @@ Created on Fri May 15 19:38:23 2020
 import argparse
 import os
 import sys
-import hicstraw
+import subprocess as sp
 
 parser = argparse.ArgumentParser()
 
@@ -66,18 +66,18 @@ if results.input == "cool":
     # Run cooler dump
 
     print("Creating sparse matrix............")
-    cmd = "cooler dump -o " + tmpfile + " " + filename # cooler CLI one-index features don't work
-    print(cmd)
-    os.system(cmd)
+    cmd = ["cooler", "dump", filename] # cooler CLI one-index features don't work
 
-    # Make one-indexed 
-
-    with open(tmpfile, "r") as tmpIn:
+    with sp.Popen(cmd, stdout=sp.PIPE, encoding="utf8") as cooler:
+        # Make one-indexed
         with open(outname, "w") as fileOut:
-            for line in tmpIn:
+            for line in cooler.stdout:
                 l = line.strip().split()
                 fileOut.write(str(int(l[0])+1) + "\t" + str(int(l[1])+1) + "\t" + l[2] + "\n")
 
+        cooler.wait()
+        if cooler.returncode != 0:
+            raise RuntimeError(f"cooler dump failed with exit code {cooler.returncode}")
     name = results.prefix + "_" + str(results.res) + "_abs.bed" #data_200000_abs.bed
     iterator = 1 # one-based
         
@@ -97,6 +97,7 @@ if results.input == "cool":
                 iterator +=1
         
 else:
+    import hicstraw
 
     # Extract Data
 
