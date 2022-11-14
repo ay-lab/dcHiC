@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 set.seed(123)
 #libraries required
 library(bigstatsr)

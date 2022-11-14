@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library(optparse)
 
 ref_reselectpc <- function(pcadir, ref) {
