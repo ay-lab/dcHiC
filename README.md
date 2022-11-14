@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/274827002.svg)](https://zenodo.org/badge/latestdoi/274827002)
 
-dcHiC is a tool for differential compartment analysis of Hi-C datasets. This latest version marks a substantial update from our first release (under the branch "dcHiC-v1"), and remains the only tool to perform Hi-C compartment analyses between multiple datasets. It features many capabilities, including:
+dcHiC is a tool for differential compartment analysis of Hi-C datasets. It features many capabilities, including:
 
 - Optimized PCA calculations (faster + capable of analysis up to 5kb resolution)
 - Comprehensive identification of significant compartment changes between any number of cell lines (with replicates), including with pseudo-bulk single cell data
@@ -11,11 +11,11 @@ dcHiC is a tool for differential compartment analysis of Hi-C datasets. This lat
 - Identification of differential loops anchored in significant differential compartments (using [Fit-Hi-C](https://github.com/ay-lab/fithic))
 - Gene Ontology annotation of differential compartments 
 
-While we hope that all users try the latest version of dcHiC, all code and documentation for the first version remains and we will continue offering support for it into the future. 
-
 ### Paper
 
-If you want to cite our tool, please cite our [preprint](https://www.biorxiv.org/content/10.1101/2021.02.02.429297v2). See web-hosted visualization examples of case scenarios in the new version [here](https://ay-lab.github.io/dcHiC). To see how to run dcHiC, read our docs and try our demo (below)! Information about data pre-processing and running single-cell data is available in the [wiki](https://github.com/ay-lab/dcHiC/wiki). 
+If you want to cite our tool, please cite our [paper in Nature Communications](https://www.nature.com/articles/s41467-022-34626-6). See web-hosted visualization examples of case scenarios in the paper [here](https://ay-lab.github.io/dcHiC). 
+
+To see how to run dcHiC, read our docs and try our demo (below)! Information about data pre-processing and running single-cell data is available in the [wiki](https://github.com/ay-lab/dcHiC/wiki). 
 
 ### Demo
 
@@ -227,6 +227,9 @@ These files can be found under the UCSC bigZips page for the specified genome. W
 
 In order to perform p and q-arm wise PCA calculate, please check the __run_dcHiC_chrArms_pca_step1.pl__ and __run_dcHiC_chrArms_combine_step2.pl__ scripts provided under the ```utility/Chromosome_ArmWise_PCA/``` folder.  
 
+## dcHiC v1
+
+We previously released a different version of dcHiC (under the branch "dcHiC-v1") based on Python & R. While we hope that all users try the latest version of dcHiC, all code and documentation for the first version remains and we will continue offering support for it into the future. 
 
 ## Contact
 
