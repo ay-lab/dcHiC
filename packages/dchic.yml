@@ -1,16 +1,18 @@
 name: dchic
 channels:
-  - bioconda
   - conda-forge
-  - r
-  - defaults
+  - bioconda
+
 dependencies:
   - bedtools
   - cooler
   - bioconductor-limma
   - bioconductor-ihw
+  - fithic>=2.0.8
+  - igv-reports
   - matplotlib
   - numpy
+  - pandoc
   - scikit-learn
   - scipy
   - sortedcontainers
@@ -26,10 +28,7 @@ dependencies:
   - r-robust
   - r-r.utils
   - r-data.table
-  - python=3.7
+  - python>=3.7
   - pysam
-  - pip
   - requests
-  - pip:
-    - igv-reports
 
