@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library(optparse)
 
 ## The following code is copied from Tcseq package
