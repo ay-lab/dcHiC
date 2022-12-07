@@ -216,7 +216,7 @@ There are a few technical implementation items to note:
 
 Within that folder put three files: 
 - `{genome}.fa` (e.g. [hg38.fa](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz)) 
-- `{genome}.tss.bed` (e.g. [hg38.tss.bed](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.refGene.gtf.gz), the TSS file. Please make sure the TSS position is selected based on the strad direction!)
+- `{genome}.tss.bed` (e.g. [hg38.tss.bed](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.refGene.gtf.gz), the TSS file. Please make sure the TSS position is selected based on the strad direction!) Note that this may be named `.refGene.gtf.gz`. 
 - `{genome}.chrom.sizes` (e.g. [hg38.chrom.sizes](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes)). 
 
 These files can be found under the UCSC bigZips page for the specified genome. When running dcHiC use the `--gfolder` option in the `select` step to provide the folder path, and dcHiC will create the necessary files. 
