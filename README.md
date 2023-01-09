@@ -234,3 +234,7 @@ We previously released a different version of dcHiC (under the branch "dcHiC-v1"
 For help with installation, technical issues, interpretation, or other details, feel free to raise an issue or contact us: 
 
 Abhijit Chakraborty (abhijit@lji.org), Jeffrey Wang (jeffreywang@lji.org), Ferhat Ay (ferhatay@lji.org)
+
+## Citation 
+
+[Chakraborty A, Wang JG, Ay F. dcHiC detects differential compartments across multiple Hi-C datasets. Nat Commun. 2022;13(1):6827. Published 2022 Nov 11. doi:10.1038/s41467-022-34626-6](https://www.nature.com/articles/s41467-022-34626-6)
