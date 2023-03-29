@@ -39,7 +39,7 @@ conda env create -f ./packages/dchic.yml
 conda activate dchic
 ```
 
-Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz` (functions file under 'packages'). 
+Afterward, activate the environment and install some purpose-built processing functions with `R CMD INSTALL functionsdchic_1.0.tar.gz` (functions file under 'packages'). M1 Mac users may face some issues, as some bioconductor packages have not yet been updated for native ARM64 support; we recommend using an x86-64 based OS for the cleanest experience. 
 
 ### Option 2: Manual Installation
 
