@@ -1,6 +1,5 @@
 #!/usr/bin/env Rscript
 
-set.seed(123)
 #libraries required
 library(bigstatsr)
 library(Rcpp)
@@ -2821,7 +2820,9 @@ option_list = list(
  	
  	make_option(c("--pthread"), type="integer", default=1, help="Number of threads to be used for pca calculation per chromosome per sample Can be used using cis/trans section 
  		[default 1]\n
- 	Note: The total number of threads will be used is = sthread X cthread X pthread\n")
+ 	Note: The total number of threads will be used is = sthread X cthread X pthread\n"),
+
+	make_option(c("--seed"), type="integer", default=123, help="Seed used for random number generation\n")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -2867,6 +2868,9 @@ if (sthread > 1) {
 	cl_sthread<- parallel::makeCluster(sthread)
 	parallel::clusterExport(cl_sthread, c("expectedInteraction","ijk2matfunc_cis","extractTrans","ijk2matfunc_trans","mat2fbm"))
 }
+
+# Init PRNG
+set.seed(as.integer(opt$seed))
 
 #Read input file
 data <- read.table(paste0(inputfile), h=F, as.is=T)
