@@ -1294,6 +1294,26 @@ subcompartment_level <- function(vec) {
 	return(df)
 }
 
+try_depmixs4_fit <- function(model, max_attempts=5) {
+	for (i in 1:max_attempts) {
+		result <- tryCatch(
+			depmixS4::fit(model),
+			error=function(msg) {
+				warning("depmixS4::fit() failed with the following error (attempt ", i, "/", max_attempts, "):")
+				warning(msg)
+				return(NA)
+			})
+		if (!is.na(result)) {
+			if (i != 1) {
+				warning("deepmixS4::fit() succeeded after ", i, " attempts")
+			}
+
+			return(result)
+		}
+	}
+	stop("deepmixS4::fit() failed. See previous error messages for more information")
+}
+
 hmmsegment <- function(compartment_file, prefix_master, subnum) {
 
 	chrom  <- unique(compartment_file$chr)
@@ -1311,9 +1331,9 @@ hmmsegment <- function(compartment_file, prefix_master, subnum) {
 			mod_f  <- depmixS4::depmix(sample ~ 1, data=df, nstates=subnum, family=gaussian())
 			mod_b  <- depmixS4::depmix(sample ~ 1, data=df[order(-df$start),], nstates=subnum, family=gaussian())
 			cat ("Running forward segmentation\n")
-			fmod_f <- depmixS4::fit(mod_f)
+			fmod_f <- try_depmixs4_fit(mod_f)
 			cat ("Running backward segmentation\n")
-			fmod_b <- depmixS4::fit(mod_b)
+			fmod_b <- try_depmixs4_fit(mod_b)
 			df[,"state_f"] <- fmod_f@posterior$state
 			df[,"state_b"] <- rev(fmod_b@posterior$state)
 			print (head(df))
