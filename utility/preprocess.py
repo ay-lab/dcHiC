@@ -116,7 +116,7 @@ else:
 
     chrsToRemove = []
     if results.remove:
-        chrsToRemove = results.remove.strip().split(",") 
+        chrsToRemove = results.remove.strip().lower().split(",")
     chrsToRemove.append("all") # default
     chrsToRemove.append("mt")
 
