@@ -1338,6 +1338,11 @@ hmmsegment <- function(compartment_file, prefix_master, subnum) {
 			print (head(df))
 			state_f <- aggregate(sample ~ state_f, mean, data=df)
 			state_b <- aggregate(sample ~ state_b, mean, data=df)
+			# Deal with the possibility that state_[fb] do not have any bins for one or more state labels
+			missing_states <- setdiff(c(1:subnum), state_f$state_f)
+			state_f <- rbind(state_f, list(missing_states, rep(NA, length(missing_states))))
+			missing_states <- setdiff(c(1:subnum), state_b$state_b)
+			state_b <- rbind(state_b, list(missing_states, rep(NA, length(missing_states))))
 			state_f <- state_f[order(state_f$sample),]
 			state_b <- state_b[order(state_b$sample),]
 			state_f[,"state"] <- c(1:subnum)
