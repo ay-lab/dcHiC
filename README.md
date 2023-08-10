@@ -208,7 +208,7 @@ dcHiC_dir
 
 There are a few technical implementation items to note:
 
-**Chromosomes:** If you are running into issues during running dcHiC, removing chrM, chrY and other non-standard chromosomes may help. Also make sure that the chromosome labels in the matrices match the goldenPath files; see [this issue](https://github.com/ay-lab/dcHiC/issues/47). 
+**Chromosomes:** If you are running into issues during running dcHiC, removing chrM, chrY and other non-standard chromosomes will help. There have been many issues raised about this; we highly recommend you [search](https://github.com/ay-lab/dcHiC/issues?q=is%3Aissue+label%3A%22user+questions%22+is%3Aclosed) for the label "user questions" under Issues if you encounter an error related to this. Also make sure that the chromosome labels in the matrices match the goldenPath files; see [this issue](https://github.com/ay-lab/dcHiC/issues/47). 
 
 **`fithic`/`dloop`**: If running `dloop`, dcHiC will first run Fit-Hi-C on the data. You will need to follow the Fit-Hi-C running procedure to do this, which will require generating a bias file. See "FitHiC2 bias file format" [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7451401/). 
 
