@@ -23,7 +23,7 @@ parser.add_argument("-prefix", action = "store", dest = "prefix", help = "[requi
 
 parser.add_argument("-genomeFile", action = "store", dest = "genomeSize", help = "[.cool only] Location of chromosome size file (Must be: hg38, hg19, mm10, mm9)")
 
-parser.add_argument("-removeChr", action = 'store', dest = 'remove', help = "[.hic only] Remove chromosomes: {Chr,Chr,Chr} format. Commonly used for Y. Default MT removed.")
+parser.add_argument("-removeChr", action = 'store', dest = 'remove', help = "[.hic only] Remove chromosomes: {Chr,Chr,Chr} format. Commonly used for Y (default MT). Specify like 'chry' or 'chrY'.")
             
 results = parser.parse_args()
 
@@ -128,7 +128,7 @@ else:
             else:
                 print(f"  - {chrom.name}")
         else:
-            chrTag = "chr" + chrom.name
+            chrTag = "chr" + chrom.name if "chr" not in chrom.name else chrom.name
             chrSize = chrom.length
             chrSizes[chrTag] = chrSize
             chrs.append(chrTag)
