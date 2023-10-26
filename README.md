@@ -58,6 +58,7 @@ To install the dependencies manually, ensure that you have the following package
 - rjson
 - limma (bioconductor)
 - IHW (bioconductor)
+- ggplot2
 - R.utils
 - hashmap (.tar.gz file under 'packages')
 
@@ -73,7 +74,7 @@ Afterward, activate the environment and install some purpose-built processing fu
 
 ### To check which R packages are already installed
 ```
-Rscript -e 'plist <- c("functionsdchic","hashmap","R.utils","Rcpp","RcppEigen","BH","optparse","bench","bigstatsr","bigreadr","robust","data.table","networkD3","depmixS4","rjson","limma","IHW"); setdiff(plist,basename(find.package(plist)))'
+Rscript -e 'plist <- c("functionsdchic","hashmap","R.utils","Rcpp","RcppEigen","BH","optparse","bench","bigstatsr","bigreadr","robust","data.table","networkD3","depmixS4","rjson","limma","ggplot2","IHW"); setdiff(plist,basename(find.package(plist)))'
 ````
 If you get character(0) then you're all set, otherwise install the packages shown in the output.
 
