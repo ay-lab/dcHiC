@@ -229,6 +229,9 @@ These files can be found under the UCSC bigZips page for the specified genome. W
 
 We previously released a different version of dcHiC (under the branch "dcHiC-v1") based on Python & R. While we hope that all users try the latest version of dcHiC, all code and documentation for the first version remains and we will continue offering support for it into the future. 
 
+## Error during hashmap package installation 
+- If you receive an error while hashmap package installation (R CMD INSTALL hashmap_0.2.2.tar.gz), please try to install the following BH version https://cran.r-project.org/src/contrib/Archive/BH/BH_1.72.0-3.tar.gz and try it again.
+
 ## Contact
 
 For help with installation, technical issues, interpretation, or other details, feel free to raise an issue or contact us: 
