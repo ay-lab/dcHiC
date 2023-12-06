@@ -692,7 +692,7 @@ pcselect <- function(data, genome, pc, diroverwrite, folder=NA) {
    		system(paste0("gunzip -c ",folder,"/",genome,".fa.gz > ",folder,"/",genome,".fa"), wait=T)
 	}
 	if (!file.exists(paste0(folder,"/",genome,".tss.bed"))) {
-   		cmd <- paste0("gunzip -c ",folder,"/",genome,".refGene.gtf.gz |awk -v OFS='\\t' '{if($3==\"transcript\"){if($7==\"+\"){print $1,$4,$4+1}else{print $1,$5-1,$5}}}' |grep -v \"alt\" |grep -v \"random\" |sort |uniq |sort -k 1,1 -k2,2n > ",folder,"/",genome,".tss.bed")
+   		cmd <- paste0("gunzip -c ",folder,"/",genome,".refGene.gtf.gz |awk -v OFS='\\t' '{if($3==\"transcript\"){if($7==\"+\"){print $1,$4,$4+1}else{print $1,$5-1,$5}}}' |grep -v \"alt\" |grep -v \"random\" |sort |uniq |sort -k1,1V -k2,2n > ",folder,"/",genome,".tss.bed")
    		cat ("Running ",cmd,"\n")
    		system(cmd, wait=T)
 	}
@@ -702,7 +702,7 @@ pcselect <- function(data, genome, pc, diroverwrite, folder=NA) {
    		system(cmd, wait=T)
 	}
 	if (!file.exists(paste0(folder,"/",genome,".GCpt.bedGraph"))) {
-  		cmd <- paste0(.findExecutable("bedtools")," nuc -fi ",folder,"/",genome,".fa -bed ",folder,"/",genome,".binned.bed |grep -v \"#\" |awk -v OFS='\\t' '{print $1,$2,$3,$5}' |grep -v \"alt\" |grep -v \"random\" |sort -k 1,1 -k2,2n > ",folder,"/",genome,".GCpt.bedGraph")
+  		cmd <- paste0(.findExecutable("bedtools")," nuc -fi ",folder,"/",genome,".fa -bed ",folder,"/",genome,".binned.bed |grep -v \"#\" |awk -v OFS='\\t' '{print $1,$2,$3,$5}' |grep -v \"alt\" |grep -v \"random\" |sort -k1,1V -k2,2n > ",folder,"/",genome,".GCpt.bedGraph")
   		cat ("Running ",cmd,"\n")
    		system(cmd, wait=T)
 	}
@@ -2405,7 +2405,7 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
    			system(paste0("gunzip -c ",folder_genome,"/",genome,".fa.gz > ",folder_genome,"/",genome,".fa"), wait=T)
 		}
 		if (!file.exists(paste0(folder_genome,"/",genome,".tss.bed"))) {
-   			cmd <- paste0("gunzip -c ",folder_genome,"/",genome,".refGene.gtf.gz |awk -v OFS='\\t' '{if($3==\"transcript\"){if($7==\"+\"){print $1,$4,$4+1}else{print $1,$5-1,$5}}}' |grep -v \"alt\" |grep -v \"random\" |sort |uniq |sort -k 1,1 -k2,2n > ",folder_genome,"/",genome,".tss.bed")
+   			cmd <- paste0("gunzip -c ",folder_genome,"/",genome,".refGene.gtf.gz |awk -v OFS='\\t' '{if($3==\"transcript\"){if($7==\"+\"){print $1,$4,$4+1}else{print $1,$5-1,$5}}}' |grep -v \"alt\" |grep -v \"random\" |sort |uniq |sort -k1,1V -k2,2n > ",folder_genome,"/",genome,".tss.bed")
    			cat ("Running ",cmd,"\n")
    			system(cmd, wait=T)
 		}
@@ -2415,7 +2415,7 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
    			system(cmd, wait=T)
 		}
 		if (!file.exists(paste0(folder_genome,"/",genome,".GCpt.bedGraph"))) {
-  			cmd <- paste0(.findExecutable("bedtools")," nuc -fi ",folder_genome,"/",genome,".fa -bed ",folder_genome,"/",genome,".binned.bed |grep -v \"#\" |awk -v OFS='\\t' '{print $1,$2,$3,$5}' |grep -v \"alt\" |grep -v \"random\" |sort -k 1,1 -k2,2n > ",folder_genome,"/",genome,".GCpt.bedGraph")
+  			cmd <- paste0(.findExecutable("bedtools")," nuc -fi ",folder_genome,"/",genome,".fa -bed ",folder_genome,"/",genome,".binned.bed |grep -v \"#\" |awk -v OFS='\\t' '{print $1,$2,$3,$5}' |grep -v \"alt\" |grep -v \"random\" |sort -k1,1V -k2,2n > ",folder_genome,"/",genome,".GCpt.bedGraph")
   			cat ("Running ",cmd,"\n")
    			system(cmd, wait=T)
 		}
@@ -2968,3 +2968,4 @@ if (pcatype == "enrich") {
 if (sthread > 1) {
 	parallel::stopCluster(cl_sthread)
 }
+
