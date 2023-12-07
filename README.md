@@ -212,6 +212,8 @@ There are a few technical implementation items to note:
 
 **Chromosomes:** If you are running into issues during running dcHiC, removing chrM, chrY and other non-standard chromosomes will help. There have been many issues raised about this; we highly recommend you [search](https://github.com/ay-lab/dcHiC/issues?q=is%3Aissue+label%3A%22user+questions%22+is%3Aclosed) for the label "user questions" or "not a bug" under Issues if you encounter an error related to this. Also make sure that the chromosome labels in the matrices match the goldenPath files; see [this issue](https://github.com/ay-lab/dcHiC/issues/47). 
 
+**Chromosome Name:** The chromosome names should have a 'chr' prefix with them. Please do not use a numeric vector (e.g. 1, 2, 3 ...) to represent chromosome names. 
+
 **`fithic`/`dloop`**: If running `dloop`, dcHiC will first run Fit-Hi-C on the data. You will need to follow the Fit-Hi-C running procedure to do this, which will require generating a bias file. See "FitHiC2 bias file format" [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7451401/). 
 
 **Support for other genomes:** While it has only been extensively tested for human and mouse genomes, dcHiC supports most other commonly-used genomes that are under the UCSC [genome page](https://hgdownload.soe.ucsc.edu/goldenPath/). To utilize this, create a folder `*{genome}_{resolution}_goldenpathData*` (e.g hg38_100000_goldenpathData).
