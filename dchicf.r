@@ -1626,10 +1626,16 @@ fithicformat <- function(data, diffdir, fithicpath, pythonpath, fdr_thr, dist_th
 			mat_rep[[j]] <- data.table::fread(paste0("gzip -dc ",diffdir,"/fithic_run/",data_rep$prefix[j],"_fithic/fithic_result/FitHiC.spline_pass1.res",as.integer(resolution),".significances.txt.gz"), h=T)
 			colnames(mat_rep[[j]])[c(6,7)] <- c("pval","qval")
 			mat_rep[[j]] <- mat_rep[[j]][mat_rep[[j]]$qval < fdr_thr,]
-			mat_rep[[j]][,"id"]  <- paste0(mat_rep[[j]]$chr1,"_",as.integer(mat_rep[[j]]$fragmentMid1-(resolution/2)),"_",mat_rep[[j]]$chr2,"_",as.integer(mat_rep[[j]]$fragmentMid2-(resolution/2)))
-			mat_rep[[j]][,"sig"] <- 1
-			data.table::setkey(mat_rep[[j]],id)
-			ids_rep[[j]] <- as.character(unlist(mat_rep[[j]][,11]))
+			if (nrow(mat_rep[[j]]) > 0) {
+				mat_rep[[j]][,"id"]  <- paste0(mat_rep[[j]]$chr1,"_",as.integer(mat_rep[[j]]$fragmentMid1-(resolution/2)),"_",mat_rep[[j]]$chr2,"_",as.integer(mat_rep[[j]]$fragmentMid2-(resolution/2)))
+				mat_rep[[j]][,"sig"] <- 1
+				data.table::setkey(mat_rep[[j]],id)
+				ids_rep[[j]] <- as.character(unlist(mat_rep[[j]][,11]))
+			} else {
+				cat("No significant loops (fdr < 0.05) found from ",data_rep$prefix[j]," Fithic run\n")
+				cat("Please check if Fithic was run successfully on that sample\n")
+				stop("Exiting!")
+			}
 		}
 		ids_rep <- sort(unique(as.character(unlist(ids_rep))))
 		mat_sample[[i]] <- matrix(0, length(ids_rep), nrow(data_rep))
