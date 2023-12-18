@@ -152,8 +152,8 @@ To see the full list of run options with examples of run code for each one, run 
 | **select**                | Selection of best PC for downstream analysis [Must be after cis or trans step]
 | **analyze**                | Perform differential analysis on selected PC's [Must be after select step]
 | **subcomp**                | Optional: Assigning sub-compartments based on PC magnitude values using HMM segmentation 
-| **fithic**         | Run [Fit-Hi-C](https://github.com/ay-lab/fithic) to identify loops before running dloop (Optional but recommended)
-| **dloop**             | Find differential loops anchored in at least one of the differential compartments across the samples (Optional but recommended)
+| **fithic**         | Run [Fit-Hi-C](https://github.com/ay-lab/fithic) to identify loops before running dloop (Optional)
+| **dloop**             | Find differential loops anchored in at least one of the differential compartments across the samples (Optional)
 | **viz**  | Generate IGV vizualization HTML file. Must have performed other steps in order (optional ones not strictly necessary) before this one.
 | **enrich**     |  Perform gene enrichment analysis (GSEA) of genes in differential compartments/loops
 
@@ -161,12 +161,16 @@ To see the full list of run options with examples of run code for each one, run 
 Here is a sample full run using the traditional cis matrix for compartment analysis: 
 
 ```
+Must - 
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype cis --dirovwt T --cthread 2 --pthread 4
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype select --dirovwt T --genome mm10
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype analyze --dirovwt T --diffdir ES_vs_NPC_100Kb
+Rscript dchicf.r --file input.ES_NPC.txt --pcatype viz --diffdir ES_vs_NPC_100Kb --genome mm10
+
+Optional - 
+Rscript dchicf.r --file input.ES_NPC.txt --pcatype subcomp --dirovwt T --diffdir ES_vs_NPC_100Kb
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype fithic --dirovwt T --diffdir ES_vs_NPC_100Kb --fithicpath "/path/to/fithic.py" --pythonpath "/path/to/python"
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype dloop --dirovwt T --diffdir ES_vs_NPC_100Kb
-Rscript dchicf.r --file input.ES_NPC.txt --pcatype subcomp --dirovwt T --diffdir ES_vs_NPC_100Kb
 Rscript dchicf.r --file input.ES_NPC.txt --pcatype viz --diffdir ES_vs_NPC_100Kb --genome mm10 
 Rscript dchicf.r --file input.txt --pcatype enrich --genome mm10 --diffdir conditionA_vs_conditionB --exclA F --region both --pcgroup pcQnm --interaction intra --pcscore F --compare F
 ```
