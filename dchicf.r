@@ -2442,10 +2442,10 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
 
 	if (region == "anchor" | region == "interactor" | region == "both") {
 		if (exclA == FALSE & pcgrp == "pcOri") {
-			compartment_score_pcQnm <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.pcQnm.bedGraph"), h=T, as.is=T)
-			diff_compartments_pcQnm <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.Filtered.pcQnm.bedGraph"), h=T, as.is=T)
-			rownames(compartment_score_pcQnm) <- paste0(compartment_score_pcQnm$chr,"_",compartment_score_pcQnm$start)
-			rownames(diff_compartments_pcQnm) <- paste0(diff_compartments_pcQnm$chr,"_",diff_compartments_pcQnm$start)
+			compartment_score_pcOri <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.pcOri.bedGraph"), h=T, as.is=T)
+			diff_compartments_pcOri <- read.table(paste0("DifferentialResult/",diffdir,"/fdr_result/differential.",interaction,"_sample_group.Filtered.pcOri.bedGraph"), h=T, as.is=T)
+			rownames(compartment_score_pcOri) <- paste0(compartment_score_pcOri$chr,"_",compartment_score_pcOri$start)
+			rownames(diff_compartments_pcOri) <- paste0(diff_compartments_pcOri$chr,"_",diff_compartments_pcOri$start)
 			for(i in 1:length(prefix_master)) {
 				if(!dir.exists(paste0(folder,"/",prefix_master[i],"_geneEnrichment"))) {
 					dir.create(paste0(folder,"/",prefix_master[i],"_geneEnrichment"))
@@ -2454,16 +2454,16 @@ geneEnrichment <- function(data, diffdir, genome, exclA=T, region="anchor", pcgr
 				colnames(diff_compartments_sample_A)[4] <- "sample"
 				diff_compartments_sample_A <- diff_compartments_sample_A[diff_compartments_sample_A$sample > 0,]
 				if (pcscore) {
-					diff_compartments_pcQnm_sample <- diff_compartments_pcQnm[,c("chr","start","end",prefix_master[i])]
-					colnames(diff_compartments_pcQnm_sample)[4] <- "sample"
+					diff_compartments_pcOri_sample <- diff_compartments_pcOri[,c("chr","start","end",prefix_master[i])]
+					colnames(diff_compartments_pcOri_sample)[4] <- "sample"
 					if (length(prefix_master) > 2) {
-						diff_compartments_pcQnm_rest <- diff_compartments_pcQnm[,c(prefix_master[which(prefix_master != prefix_master[i])])]
-						diff_compartments_pcQnm_sample[,"sample_rest"] <- apply(diff_compartments_pcQnm_rest, 1, max)
+						diff_compartments_pcOri_rest <- diff_compartments_pcOri[,c(prefix_master[which(prefix_master != prefix_master[i])])]
+						diff_compartments_pcOri_sample[,"sample_rest"] <- apply(diff_compartments_pcOri_rest, 1, max)
 					} else {
-						diff_compartments_pcQnm_sample[,"sample_rest"] <- diff_compartments_pcQnm[,c(prefix_master[which(prefix_master != prefix_master[i])])]
+						diff_compartments_pcOri_sample[,"sample_rest"] <- diff_compartments_pcOri[,c(prefix_master[which(prefix_master != prefix_master[i])])]
 					}
-					diff_compartments_pcQnm_sample <- diff_compartments_pcQnm_sample[diff_compartments_pcQnm_sample$sample > diff_compartments_pcQnm_sample$sample_rest,]
-					diff_compartments_sample_A <- na.omit(diff_compartments_sample_A[rownames(diff_compartments_pcQnm_sample),])
+					diff_compartments_pcOri_sample <- diff_compartments_pcOri_sample[diff_compartments_pcOri_sample$sample > diff_compartments_pcOri_sample$sample_rest,]
+					diff_compartments_sample_A <- na.omit(diff_compartments_sample_A[rownames(diff_compartments_pcOri_sample),])
 					write.table(diff_compartments_sample_A[,1:3], file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
 				} else {
 					write.table(diff_compartments_sample_A[,1:3], file=paste0(folder,"/",prefix_master[i],"_geneEnrichment/",prefix_master[i],"_Diff_A_compartments.bedGraph"), row.names=F, col.names=F, sep="\t", quote=FALSE)
